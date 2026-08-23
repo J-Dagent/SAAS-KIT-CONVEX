@@ -24,19 +24,19 @@ export const Route = createFileRoute("/_static/docs/")({
 
 const gettingStartedSteps = [
   {
-    name: "database",
-    title: "Configuration de la base de données",
-    ctaLabel: "Configurer la BDD",
+    name: "convex",
+    title: "Configuration de Convex",
+    ctaLabel: "Configurer Convex",
     description:
-      "Configurez la base de données serverless et le chemin d’accès adapté à votre fournisseur.",
+      "Configurez la base de données, les fonctions et les abonnements temps réel de Convex.",
     icon: DatabaseIcon,
-    image: "/cloudflare.png",
+    image: "/convex-logo.webp",
     badgeVariant: "default" as const,
     features: [
-      "Optimisé pour l’edge",
-      "Pool de connexions",
-      "Proxy HTTP",
-      "Prêt pour le serverless",
+      "Base de données réactive",
+      "Queries et mutations",
+      "Actions et HTTP Actions",
+      "Abonnements temps réel",
     ],
   },
   {
@@ -44,15 +44,15 @@ const gettingStartedSteps = [
     title: "Configuration de l’authentification",
     ctaLabel: "Configurer l’auth",
     description:
-      "Configurez Better Auth, les fournisseurs sociaux et la gestion des sessions en environnement serverless.",
+      "Configurez Better Auth, Google OAuth et les sessions stockées dans Convex.",
     icon: ShieldCheckIcon,
     image: "/better-auth.png",
     badgeVariant: "secondary" as const,
     features: [
       "OAuth social",
       "Gestion des sessions",
-      "Base de données flexible",
-      "Compatible edge",
+      "Persistance Convex",
+      "SSR authentifié",
     ],
   },
   {
@@ -60,15 +60,15 @@ const gettingStartedSteps = [
     title: "Intégration des paiements",
     ctaLabel: "Configurer Polar",
     description:
-      "Intégrez Polar pour gérer les abonnements et les paiements.",
+      "Intégrez Polar avec Convex pour gérer les abonnements et les paiements.",
     icon: CreditCardIcon,
     image: "/polar.png",
     badgeVariant: "outline" as const,
     features: [
       "Gestion des abonnements",
-      "API Polar",
-      "Pensé pour les développeurs",
-      "Intégration API",
+      "Webhooks synchronisés",
+      "Checkout et portail",
+      "État réactif",
     ],
   },
 ];
@@ -85,8 +85,8 @@ function RouteComponent() {
           Documentation
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-          Guides complets pour configurer la base de données,
-          l’authentification et les paiements du template SaaS.
+          Guides complets pour configurer Convex, l’authentification et les
+          paiements du template SaaS.
         </p>
         <Badge variant="secondary" className="text-sm">
           Architecture monorepo
@@ -316,12 +316,12 @@ function RouteComponent() {
                 <div className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5" />
                   <span className="text-sm">
-                    Service de données Cloudflare séparé
+                    Backend Convex séparé
                   </span>
                 </div>
                 <div className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5" />
-                  <span className="text-sm">Couche de données partagée</span>
+                  <span className="text-sm">Queries, mutations et actions typées</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5" />
@@ -350,12 +350,12 @@ function RouteComponent() {
                 <div className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5" />
                   <span className="text-sm">
-                    Better Auth, Drizzle ORM et Neon
+                    Better Auth et Polar sur Convex
                   </span>
                 </div>
                 <div className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5" />
-                  <span className="text-sm">TypeScript, Drizzle ORM, pnpm</span>
+                  <span className="text-sm">TypeScript, Convex et pnpm</span>
                 </div>
               </div>
             </div>

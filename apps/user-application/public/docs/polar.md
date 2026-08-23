@@ -1,401 +1,139 @@
-# Polar Integration Setup
+# Polar billing with Convex
 
-*Payment & Subscription Guide*
+## Architecture
 
-Integrate Polar for subscription management and payment processing with TanStack Start
+The pricing, checkout, success, subscription, and customer portal screens keep the same React UI. `@convex-dev/polar` now owns the backend integration.
 
-## Overview
+```text
+Pricing UI
+  -> Convex query for synchronized products and subscription state
+  -> Convex action for checkout or customer portal URL
+  -> Polar sandbox or production
+  -> webhook to /polar/events on the Convex site
+  -> reactive subscription update in the UI
+```
 
-[Polar](https://polar.sh) is a modern subscription platform designed for developers and creators. This integration provides a complete subscription management system using Polar's API without requiring webhooks or external database tables for payment tracking.
+The Convex component stores synchronized Polar products, customers, and subscriptions in its isolated tables. PostgreSQL subscription tables and direct TanStack Polar middleware are not used.
 
-The setup includes:
+## Create Polar credentials
 
-- **Product Management** - Create and manage subscription products through Polar dashboard
-- **Checkout Flow** - Generate secure payment links for subscription purchases
-- **Subscription Tracking** - Monitor subscription status through Polar's API
-- **Feature Management** - Control features based on product metadata
-- **Pure API Integration** - No webhooks or external payment tables required
+Use Polar sandbox for development. Create an organization token with the permissions required for products, subscriptions, customers, checkouts, checkout links, and customer portal sessions.
 
-> **API Documentation:** Complete API reference available at [polar.sh/docs/api-reference/introduction](https://polar.sh/docs/api-reference/introduction)
-
----
-
-## Step 1: Polar API Setup
-
-Before integrating Polar into your application, you'll need to set up your Polar account and obtain the necessary API credentials.
-
-### 1. Create Polar Account
-
-1. Visit [polar.sh](https://polar.sh) and create an account
-2. Navigate to your organization settings
-3. Generate an API access token under "API Keys"
-
-### 2. Configure Environment Variables
+Set the values on the Convex development deployment:
 
 ```bash
-# .env
-POLAR_SECRET="your-polar-api-access-token"
+pnpm --filter @repo/backend exec convex env set POLAR_ORGANIZATION_TOKEN your-token
+pnpm --filter @repo/backend exec convex env set POLAR_WEBHOOK_SECRET your-webhook-secret
+pnpm --filter @repo/backend exec convex env set POLAR_SERVER sandbox
 ```
 
-> **Sandbox vs Production:** Use Polar's sandbox environment for development and testing. Switch to production server for live applications.
+Do not put live tokens in `.env` examples or documentation.
 
----
+## Configure the webhook
 
-## Step 2: Middleware Configuration
+Create a Polar webhook with this endpoint:
 
-Create Polar middleware to initialize the Polar SDK instance and make it available throughout your server functions.
-
-```typescript
-// src/core/middleware/polar.ts
-import { Polar } from "@polar-sh/sdk";
-import { createMiddleware } from "@tanstack/react-start";
-import { env } from "cloudflare:workers";
-
-export const polarMiddleware = createMiddleware({
-  type: "function",
-}).server(async ({ next }) => {
-  const polar = new Polar({
-    accessToken: env.POLAR_SECRET,
-    server: "sandbox", // Change to "production" for live environment
-  });
-
-  return next({
-    context: {
-      polar,
-    },
-  });
-});
+```text
+https://your-deployment.convex.site/polar/events
 ```
 
-### Middleware Benefits
+Enable at least these events:
 
-- **Centralized Configuration** - Single place to configure Polar SDK settings
-- **Type Safety** - Polar instance available in server function context with full TypeScript support
-- **Request Scoped** - Fresh Polar instance for each request ensuring isolation
-- **Environment Handling** - Automatic environment variable access through Cloudflare Workers
+- `product.created`
+- `product.updated`
+- `subscription.created`
+- `subscription.updated`
 
----
+`packages/backend/convex/http.ts` registers the webhook route. The component verifies the webhook secret before updating its tables.
 
-## Step 3: Server Functions Implementation
+## Products
 
-Create server functions to handle product management, checkout creation, and subscription tracking.
+Create subscription products in the Polar dashboard. New product events synchronize them to Convex. If products existed before the integration, run the component's `syncProducts` action once from a safe development deployment.
 
-```typescript
-// src/core/functions/payments.ts
-import { createServerFn } from "@tanstack/react-start";
-import { protectedFunctionMiddleware } from "@/core/middleware/auth";
-import { polarMiddleware } from "@/core/middleware/polar";
-import z from "zod";
-import { getRequestIP } from "@tanstack/react-start/server";
+The pricing route reads `api.billing.listAllProducts`. Product names, descriptions, prices, recurrence, benefits, and metadata feed the existing cards.
 
-export const baseFunction = createServerFn().middleware([
-  protectedFunctionMiddleware,
-  polarMiddleware,
+## Checkout
+
+The checkout button calls `api.billing.generateCheckoutLink`. The action derives the authenticated Better Auth user on the backend and maps that user to a Polar customer. The browser then navigates to the returned checkout URL.
+
+The success URL keeps the established route:
+
+```text
+/app/polar/checkout/success?checkout_id={CHECKOUT_ID}
+```
+
+The success page subscribes to `api.billing.getCurrentSubscription`. It changes from processing to confirmed when the Polar webhook updates Convex. No polling or manual TanStack Query invalidation is needed.
+
+## Customer portal
+
+`/app/polar/portal` remains the public application route. Its server handler calls the authenticated Convex action `api.billing.generateCustomerPortalUrl` and redirects to the returned Polar portal URL.
+
+## Frontend data flow
+
+The subscription route preloads products and the current subscription during SSR, then resumes both as live Convex queries in the browser:
+
+```ts
+await Promise.all([
+  queryClient.prefetchQuery(convexQuery(api.billing.listAllProducts, {})),
+  queryClient.prefetchQuery(
+    convexQuery(api.billing.getCurrentSubscription, {}),
+  ),
 ]);
+```
 
-export const getProducts = baseFunction.handler(async (ctx) => {
-  const products = await ctx.context.polar.products.list({
-    isArchived: false,
-  });
+`PricingGrid` and `PricingCard` remain presentation components. Their types derive from the generated Convex function return types, so the UI stays aligned with the component API without a duplicate hand-written billing schema.
 
-  return products.result.items;
+## Product metadata and prices
+
+The existing cards preserve metadata-driven feature lists. Add product metadata keys containing `feature`, for example:
+
+```text
+feature_1 = Unlimited projects
+feature_2 = Priority support
+```
+
+Cards support recurring fixed prices and custom price ranges. Keep display decisions in the UI and billing authority in Polar. Do not infer subscription access from product metadata; use the synchronized subscription record and its status.
+
+## Checkout action
+
+The client uses a Convex action because checkout creation calls Polar:
+
+```ts
+const generateCheckoutLink = useConvexAction(
+  api.billing.generateCheckoutLink,
+);
+
+const checkout = await generateCheckoutLink({
+  productIds: [productId],
+  origin: window.location.origin,
+  successUrl: `${window.location.origin}/app/polar/checkout/success?checkout_id={CHECKOUT_ID}`,
+  locale: "fr",
 });
 
-const PaymentLink = z.object({
-  productId: z.string(),
-});
-
-export const createPaymentLink = baseFunction
-  .inputValidator((data: z.infer<typeof PaymentLink>) => {
-    return PaymentLink.parse(data);
-  })
-  .handler(async (ctx) => {
-    const ip = getRequestIP();
-    const checkout = await ctx.context.polar.checkouts.create({
-      products: [ctx.data.productId],
-      externalCustomerId: ctx.context.userId,
-      successUrl: `http://localhost:3000/app/polar/checkout/success?checkout_id={CHECKOUT_ID}`,
-      customerIpAddress: ip,
-      customerEmail: ctx.context.email,
-    });
-    return checkout;
-  });
-
-export const validPayment = baseFunction
-  .inputValidator((data: string) => {
-    if (typeof data !== "string") {
-      throw new Error("Invalid data type");
-    }
-    return data;
-  })
-  .handler(async (ctx) => {
-    const payment = await ctx.context.polar.checkouts.get({
-      id: ctx.data,
-    });
-
-    if (payment.status === "succeeded") {
-      return true;
-    }
-    return false;
-  });
-
-export const collectSubscription = baseFunction.handler(async (ctx) => {
-  const subscriptions = await ctx.context.polar.subscriptions.list({
-    externalCustomerId: ctx.context.userId,
-  });
-
-  if (subscriptions.result.items.length === 0) {
-    return null;
-  }
-
-  const subscription = subscriptions.result.items[0];
-  return subscription;
-});
+window.location.href = checkout.url;
 ```
 
-### Function Breakdown
+The backend component supplies the authenticated customer identity. The browser supplies navigation URLs and the selected product only.
 
-**`getProducts`**
-- Fetches all active (non-archived) products from Polar
-- Used to display available subscription plans
+## Authentication and identity
 
-**`createPaymentLink`**
-- Creates a secure checkout session for a specific product
-- Links checkout to authenticated user via `externalCustomerId`
-- Includes customer IP for automatic country selection
+Billing functions never accept a user ID from the browser. `packages/backend/convex/billing.ts` reads the Better Auth user from the authenticated Convex context and supplies that stable component user ID and email to Polar.
 
-**`validPayment`**
-- Validates a completed checkout by checking its status
-- Returns boolean indicating if payment was successful
+## Failure modes
 
-**`collectSubscription`**
-- Retrieves active subscription for current user
-- Returns null if no subscription exists
+- No products: create products in the active Polar environment or run the component sync action after configuring the token.
+- Checkout action failure: confirm the organization token permissions, product ID, and `POLAR_SERVER` value.
+- Success page stays processing: confirm the webhook URL, secret, and subscribed events, then inspect the Convex function logs.
+- Portal failure: confirm the signed-in user has a synchronized Polar customer and subscription.
+- Sandbox/production mismatch: product IDs and credentials are environment-specific and must not be mixed.
 
----
+## Development and production
 
-## Step 4: Product Configuration
+Keep `POLAR_SERVER=sandbox` during local and staging validation. Before production:
 
-Configure your subscription products in the Polar dashboard with metadata to control application features.
+1. Create production products and an organization token.
+2. Set production Convex environment variables.
+3. Create the production webhook against the production Convex site URL.
+4. Verify checkout, webhook synchronization, subscription display, and portal access.
 
-### Product Metadata Setup
-
-![Polar Product Metadata](/polar-product-metadata.png)
-
-Products support custom metadata that can be used to control feature access in your application:
-
-```json
-{
-  "features": {
-    "analytics": true,
-    "api_access": true,
-    "priority_support": true,
-    "custom_branding": false
-  },
-  "limits": {
-    "projects": 10,
-    "storage_gb": 100,
-    "api_calls_per_month": 10000
-  }
-}
-```
-
-### Benefits of Metadata-Driven Features
-
-- **Dynamic Feature Control** - Enable/disable features based on subscription tier
-- **No Database Required** - Feature configuration stored in Polar, not your database
-- **Real-time Updates** - Changes to product metadata apply immediately
-- **Flexible Pricing** - Easy to create different tiers with varying feature sets
-
----
-
-## Step 5: Client-Side Integration
-
-Create React components to handle the subscription flow and display products.
-
-### Product Display Component
-
-```typescript
-// src/components/payments/polar/product-list.tsx
-import { getProducts } from "@/core/functions/payments";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-export function ProductList() {
-  const products = await getProducts();
-
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {products.map((product) => (
-        <Card key={product.id}>
-          <CardHeader>
-            <CardTitle>{product.name}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              {product.description}
-            </p>
-            <div className="text-2xl font-bold mb-4">
-              ${product.prices[0]?.priceAmount / 100}/mo
-            </div>
-            <SubscribeButton productId={product.id} />
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-}
-```
-
-### Subscription Button Component
-
-```typescript
-// src/components/payments/polar/subscribe-button.tsx
-import { createPaymentLink } from "@/core/functions/payments";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-
-interface SubscribeButtonProps {
-  productId: string;
-}
-
-export function SubscribeButton({ productId }: SubscribeButtonProps) {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubscribe = async () => {
-    setIsLoading(true);
-    try {
-      const checkout = await createPaymentLink({ productId });
-      window.location.href = checkout.url;
-    } catch (error) {
-      console.error("Failed to create payment link:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <Button
-      onClick={handleSubscribe}
-      disabled={isLoading}
-      className="w-full"
-    >
-      {isLoading ? "Creating checkout..." : "Subscribe"}
-    </Button>
-  );
-}
-```
-
-### Feature Access Hook
-
-```typescript
-// src/hooks/use-subscription-features.ts
-import { collectSubscription } from "@/core/functions/payments";
-import { useMemo } from "react";
-
-export function useSubscriptionFeatures() {
-  const subscription = await collectSubscription();
-
-  const features = useMemo(() => {
-    if (!subscription || !subscription.product.metadata) {
-      return {};
-    }
-
-    const metadata = JSON.parse(subscription.product.metadata);
-    return metadata.features || {};
-  }, [subscription]);
-
-  const hasFeature = (featureName: string) => {
-    return features[featureName] === true;
-  };
-
-  return {
-    subscription,
-    features,
-    hasFeature,
-    isSubscribed: !!subscription,
-  };
-}
-```
-
----
-
-## Step 6: Checkout Success Handler
-
-Create a success page to handle completed payments and validate the checkout.
-
-```typescript
-// src/routes/app/polar/checkout/success.tsx
-import { createFileRoute } from "@tanstack/react-router";
-import { validPayment } from "@/core/functions/payments";
-import { CheckCircle } from "lucide-react";
-
-export const Route = createFileRoute("/app/polar/checkout/success")({
-  component: CheckoutSuccess,
-  validateSearch: (search) => ({
-    checkout_id: (search as any).checkout_id as string,
-  }),
-});
-
-function CheckoutSuccess() {
-  const { checkout_id } = Route.useSearch();
-  const isValid = await validPayment(checkout_id);
-
-  if (!isValid) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-destructive">
-            Payment Verification Failed
-          </h1>
-          <p className="text-muted-foreground">
-            Please contact support if you believe this is an error.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-        <h1 className="text-3xl font-bold text-green-600">
-          Subscription Activated!
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Your subscription has been successfully activated.
-        </p>
-      </div>
-    </div>
-  );
-}
-```
-
----
-
-## Architecture Benefits
-
-### Pure API Integration
-
-This setup uses Polar's API exclusively without requiring:
-
-- **No Webhooks** - Direct API calls for real-time subscription status
-- **No Payment Tables** - Subscription data managed entirely by Polar
-- **No Complex State Management** - Subscription status fetched on-demand
-
-### Simplified Feature Management
-
-- **Metadata-Driven** - Features controlled through product metadata in Polar dashboard
-- **Real-time Updates** - Feature changes apply immediately without code deployments
-- **Flexible Tiers** - Easy to create and modify subscription tiers
-
-### Security & Reliability
-
-- **Server-Side Processing** - All payment operations handled on server
-- **IP Tracking** - Customer IP captured for fraud prevention
-- **Type Safety** - Full TypeScript support throughout the integration
-
----
-
-**Polar Integration Complete!** Your application now has a fully functional subscription system with Polar handling payments, subscription management, and feature access control through a clean API-only integration.
+Do not deploy or switch to Polar production as part of routine template validation.

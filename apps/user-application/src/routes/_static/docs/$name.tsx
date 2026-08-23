@@ -1,4 +1,5 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -7,13 +8,23 @@ import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
 import { Copy, Check } from "lucide-react";
 
+const loadMarkdown = createServerFn({ method: "GET" })
+  .validator((name: string) => name)
+  .handler(async ({ data: name }) => {
+    if (!/^[a-z0-9-]+$/.test(name)) return null;
+
+    const { getRequest } = await import("@tanstack/react-start/server");
+    const response = await fetch(
+      new URL(`/docs/${name}.md`, getRequest().url),
+    );
+    return response.ok ? await response.text() : null;
+  });
+
 export const Route = createFileRoute("/_static/docs/$name")({
   component: RouteComponent,
   loader: async (event) => {
-    const response = await fetch(`${event.location.pathname}.md`);
-    if (!response.ok) throw notFound();
-    const markdown = await response.text();
-    console.log(markdown);
+    const markdown = await loadMarkdown({ data: event.params.name });
+    if (markdown === null) throw notFound();
     return { markdown };
   },
 });

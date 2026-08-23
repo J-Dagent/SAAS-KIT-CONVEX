@@ -1,19 +1,17 @@
 # Monorepo Architecture
 
-`jd-saas-kit` preserves three deployment and ownership boundaries.
+`jd-saas-kit-convex` has two deployment and ownership boundaries.
 
 ## User application
 
-`apps/user-application` is the TanStack Start application and Cloudflare Worker named `jd-start-app`. It owns browser UI, server functions, authentication-facing behavior, payments, and transactions initiated by users. Its custom `src/server.ts` initializes the shared database and auth layers before handing requests to TanStack Start.
+`apps/user-application` is the TanStack Start application and Cloudflare Worker named `jd-start-app`. It owns browser UI, SSR, static assets, framework-owned Server Functions, the public Better Auth proxy, and the existing billing screens.
 
-## Data service
+## Convex backend
 
-`apps/data-service` is the independent Cloudflare Worker named `jd-data-service`. It is intentionally separate so APIs, background jobs, future queues, Durable Objects, Workflows, and long-running work do not accumulate inside the user-facing application.
+`packages/backend` is the Convex project published inside the workspace as `@repo/backend`. It owns application data, queries, mutations, actions, HTTP Actions, Better Auth persistence, Polar webhook synchronization, and future scheduled work.
 
-## Shared data layer
+The browser connects to Convex through the official TanStack Query adapter. TanStack Start preloads queries during SSR, then the browser resumes live subscriptions.
 
-`packages/data-ops` is published inside the workspace as `@repo/data-ops`. It contains Drizzle schemas and database clients, Better Auth setup, reusable queries, and shared Zod contracts.
+## Runtime path
 
-## Default database path
-
-The default runtime path is Neon → PostgreSQL → Drizzle ORM → `drizzle-orm/neon-http` → Better Auth's PostgreSQL adapter. PlanetScale, Supabase, Cloudflare D1, SQLite-compatible, and other relational examples are alternative provider paths, not simultaneously active infrastructure.
+The runtime path is Browser → Cloudflare and TanStack Start → Convex. This variant intentionally has no PostgreSQL, Drizzle, or separate data-service fallback.

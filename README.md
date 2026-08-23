@@ -1,14 +1,13 @@
-# jd-saas-kit
+# jd-saas-kit-convex
 
-A reusable pnpm monorepo SaaS template for Cloudflare, built around clear application, service, and data-layer boundaries.
+A Convex-native variant of the JD SaaS Kit. It keeps the TanStack Start and Cloudflare frontend while Convex owns backend data, authentication persistence, billing synchronization, and realtime updates.
 
 ## Architecture
 
-- `apps/user-application` (`jd-start-app`): TanStack Start UI, server functions, authentication-facing logic, and user-triggered transactions.
-- `apps/data-service` (`jd-data-service`): Cloudflare Worker APIs and the home for background, queue, Durable Object, Workflow, and long-running workloads.
-- `packages/data-ops` (`@repo/data-ops`): shared Drizzle schemas, Neon database access, Better Auth setup, queries, and Zod schemas.
+- `apps/user-application` (`jd-start-app`): TanStack Start UI and SSR on Cloudflare, existing authentication UX, billing screens, and framework-owned Server Functions.
+- `packages/backend` (`@repo/backend`): Convex schema, queries, mutations, actions, HTTP Actions, Better Auth component, and Polar component.
 
-The default database path is Neon PostgreSQL through Drizzle's `neon-http` driver. Alternative relational provider examples remain intentional reference material.
+Cloudflare owns the frontend worker and static assets. Convex is the only application database and backend platform in this variant.
 
 ## Setup
 
@@ -17,7 +16,7 @@ pnpm run setup
 pnpm skills:sync
 ```
 
-This installs all dependencies and builds required packages.
+This installs dependencies, configures a Convex development deployment, and creates the frontend `.env.local` with local Convex URLs when it does not already exist. Existing local environment files are never overwritten. Set the required Convex, OAuth, and Polar environment variables before exercising authentication or billing.
 
 ## Development
 
@@ -31,9 +30,9 @@ pnpm dev
 pnpm run dev:user-application
 ```
 
-### Data Service
+### Convex backend
 ```bash
-pnpm run dev:data-service
+pnpm run dev:backend
 ```
 
 ## Validation
@@ -46,16 +45,6 @@ pnpm test
 
 No automated test suite is configured yet; `pnpm test` reports that fact explicitly.
 
-## Database helpers
-
-```bash
-pnpm pull-drizzle-schema
-pnpm generate-auth-drizzle-schema
-pnpm generate-drizzle-sql-output
-```
-
-Review generated schema and SQL artifacts. Apply database migrations manually.
-
 ## Deployment
 
 ### User Application (Cloudflare)
@@ -63,9 +52,9 @@ Review generated schema and SQL artifacts. Apply database migrations manually.
 pnpm run deploy:user-application
 ```
 
-### Data Service
+### Convex backend
 ```bash
-pnpm run deploy:data-service
+pnpm run deploy:backend
 ```
 
-See [AGENTS.md](AGENTS.md) for engineering conventions and [`.agents/project-setup-guide.md`](.agents/project-setup-guide.md) for provider setup.
+Deployment commands are manual and are not part of routine validation. See [AGENTS.md](AGENTS.md) for engineering conventions and [`apps/user-application/public/docs/convex.md`](apps/user-application/public/docs/convex.md) for setup details.
