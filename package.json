@@ -1,0 +1,29 @@
+{
+  "name": "jd-saas-kit",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "setup": "pnpm install && pnpm run build:data-ops",
+    "build:data-ops": "pnpm --filter @repo/data-ops build",
+    "dev:user-application": "pnpm --filter jd-start-app dev",
+    "deploy:user-application": "pnpm run build:data-ops && pnpm --filter jd-start-app deploy",
+    "dev:data-service": "pnpm --filter jd-data-service dev",
+    "deploy:data-service": "pnpm run build:data-ops && pnpm --filter jd-data-service deploy",
+    "dev": "pnpm --parallel --filter jd-start-app --filter jd-data-service dev",
+    "build": "pnpm run build:data-ops && pnpm --filter jd-data-service build && pnpm --filter jd-start-app build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "node -e \"console.log('No automated test suite is configured.')\"",
+    "skills:sync": "node scripts/sync-agent-skills.mjs",
+    "pull-drizzle-schema": "pnpm --filter @repo/data-ops drizzle:pull",
+    "generate-auth-drizzle-schema": "pnpm --filter @repo/data-ops better-auth:generate",
+    "generate-drizzle-sql-output": "pnpm --filter @repo/data-ops drizzle:generate"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.14.0",
+  "devDependencies": {
+    "@types/node": "^22.18.12",
+    "typescript": "5.9.3"
+  }
+}
