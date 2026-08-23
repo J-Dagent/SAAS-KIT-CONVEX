@@ -6,11 +6,10 @@ Use `staging` as the integration branch. Start feature branches from the latest 
 
 ## Repository Architecture
 
-This is a pnpm monorepo with three intentional boundaries:
+This is a pnpm monorepo with two intentional boundaries:
 
-- `apps/user-application`: `jd-start-app`, the TanStack Start user-facing application. It owns UI, user-triggered transactions, server functions, authentication-facing application logic, and the Polar checkout experience.
-- `apps/data-service`: `jd-data-service`, a separate Cloudflare Worker for APIs, background processing, future queues, Durable Objects, Workflows, and long-running or asynchronous workloads. Keep it separate from the user application.
-- `packages/data-ops`: `@repo/data-ops`, the reusable data layer. It owns Drizzle schemas, database clients, Better Auth setup, shared queries, and shared Zod schemas.
+- `apps/user-application`: `jd-convex-start-app`, the TanStack Start user-facing application deployed on Cloudflare. It owns UI, SSR, TanStack Server Functions, authentication-facing application logic, and the existing billing experience.
+- `packages/backend`: `@repo/backend`, the Convex backend. It owns the database, queries, mutations, actions, HTTP Actions, Better Auth persistence, Polar synchronization, and scheduled or asynchronous backend work.
 
 Demo and example files are intentional teaching/reference material in the template. Do not remove them unless explicitly requested.
 
@@ -41,9 +40,22 @@ pnpm skills:sync
 
 `pnpm test` reports that no automated suite exists until real tests are added; it must not be treated as a passing test suite. Deployment commands are documented for users but must be run only when deployment is explicitly requested.
 
-## Database
+## Convex
 
-The default path is Neon → PostgreSQL → Drizzle ORM → `drizzle-orm/neon-http` → Better Auth PostgreSQL. Provider flexibility is intentional: documented PlanetScale, Supabase, Cloudflare D1, SQLite-compatible, and other relational paths are alternatives, not simultaneously active defaults. Never run migrations or destructive database operations without explicit authorization.
+Convex is the single primary backend and data platform in this variant. Do not add PostgreSQL, Drizzle, or another fallback data layer. Read `packages/backend/convex/_generated/ai/guidelines.md` before changing Convex functions. Never run migrations or destructive data operations without explicit authorization.
+
+## CTO/CRO Routing
+
+Start from the request's current state and invoke only the skills still needed:
+
+- Undiagnosed CRO problem: `cro-experience-audit`.
+- Approved CRO recommendation without a `CONVERSION_IMPLEMENTATION_CONTRACT`: `cro-delivery-spec`.
+- Ready `CONVERSION_IMPLEMENTATION_CONTRACT`: `cro-web-implement`.
+- Form-specific work: `implement-forms`.
+- Form work encountered during `cro-web-implement`: compose with `implement-forms`.
+- Completed CRO implementation or QA: `cro-web-validate`.
+
+Reuse approved audits, specifications, and decisions instead of rerunning completed stages. Keep `implement-forms` conditional. Every CRO implementation finishes with `cro-web-validate`.
 
 ## Source Inspection
 
