@@ -4,12 +4,12 @@
   "description": "",
   "scripts": {
     "setup": "pnpm install && pnpm --filter @repo/backend run setup",
-    "dev:user-application": "pnpm --filter jd-start-app run dev",
-    "deploy:user-application": "pnpm --filter jd-start-app run deploy",
+    "dev:user-application": "pnpm --filter jd-convex-start-app run dev",
+    "deploy:user-application": "pnpm --filter jd-convex-start-app run deploy",
     "dev:backend": "pnpm --filter @repo/backend run dev",
     "deploy:backend": "pnpm --filter @repo/backend run deploy",
-    "dev": "pnpm --parallel --filter jd-start-app --filter @repo/backend run dev",
-    "build": "pnpm --filter @repo/backend run build && pnpm --filter jd-start-app run build",
+    "dev": "pnpm --parallel --filter jd-convex-start-app --filter @repo/backend run dev",
+    "build": "pnpm --filter @repo/backend run build && pnpm --filter jd-convex-start-app run build",
     "typecheck": "pnpm -r typecheck",
     "test": "node -e \"console.log('No automated test suite is configured.')\"",
     "skills:sync": "node scripts/sync-agent-skills.mjs"

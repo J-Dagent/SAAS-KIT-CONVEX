@@ -4,7 +4,7 @@ A Convex-native variant of the JD SaaS Kit. It keeps the TanStack Start and Clou
 
 ## Architecture
 
-- `apps/user-application` (`jd-start-app`): TanStack Start UI and SSR on Cloudflare, existing authentication UX, billing screens, and framework-owned Server Functions.
+- `apps/user-application` (`jd-convex-start-app`): TanStack Start UI and SSR on Cloudflare, existing authentication UX, billing screens, and framework-owned Server Functions.
 - `packages/backend` (`@repo/backend`): Convex schema, queries, mutations, actions, HTTP Actions, Better Auth component, and Polar component.
 
 Cloudflare owns the frontend worker and static assets. Convex is the only application database and backend platform in this variant.

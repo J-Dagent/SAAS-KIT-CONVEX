@@ -4,7 +4,7 @@
 
 ## User application
 
-`apps/user-application` is the TanStack Start application and Cloudflare Worker named `jd-start-app`. It owns browser UI, SSR, static assets, framework-owned Server Functions, the public Better Auth proxy, and the existing billing screens.
+`apps/user-application` is the TanStack Start application and Cloudflare Worker named `jd-convex-start-app`. It owns browser UI, SSR, static assets, framework-owned Server Functions, the public Better Auth proxy, and the existing billing screens.
 
 ## Convex backend
 

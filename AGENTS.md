@@ -8,7 +8,7 @@ Use `staging` as the integration branch. Start feature branches from the latest 
 
 This is a pnpm monorepo with two intentional boundaries:
 
-- `apps/user-application`: `jd-start-app`, the TanStack Start user-facing application deployed on Cloudflare. It owns UI, SSR, TanStack Server Functions, authentication-facing application logic, and the existing billing experience.
+- `apps/user-application`: `jd-convex-start-app`, the TanStack Start user-facing application deployed on Cloudflare. It owns UI, SSR, TanStack Server Functions, authentication-facing application logic, and the existing billing experience.
 - `packages/backend`: `@repo/backend`, the Convex backend. It owns the database, queries, mutations, actions, HTTP Actions, Better Auth persistence, Polar synchronization, and scheduled or asynchronous backend work.
 
 Demo and example files are intentional teaching/reference material in the template. Do not remove them unless explicitly requested.
