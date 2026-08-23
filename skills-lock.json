@@ -36,6 +36,15 @@
       "syncedAt": "2026-08-23",
       "computedHash": "2c20617f87ec8af6a434859f381b2f061a69b530444e74eb39e78bb016a6d1e2"
     },
+    "create-prd": {
+      "source": "project-local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/create-prd/SKILL.md",
+      "version": "2.0.0",
+      "license": "MIT",
+      "syncedAt": "2026-08-23",
+      "computedHash": "c17f47f0cb85ae4abeb77bb594a4e8c123010d18cee2537cb2de8565a65129b4"
+    },
     "diagnosing-bugs": {
       "source": "mattpocock/skills",
       "sourceType": "github",
