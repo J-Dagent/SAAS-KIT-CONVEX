@@ -6,11 +6,10 @@ Use `staging` as the integration branch. Start feature branches from the latest 
 
 ## Repository Architecture
 
-This is a pnpm monorepo with three intentional boundaries:
+This is a pnpm monorepo with two intentional boundaries:
 
-- `apps/user-application`: `jd-start-app`, the TanStack Start user-facing application. It owns UI, user-triggered transactions, server functions, authentication-facing application logic, and the Polar checkout experience.
-- `apps/data-service`: `jd-data-service`, a separate Cloudflare Worker for APIs, background processing, future queues, Durable Objects, Workflows, and long-running or asynchronous workloads. Keep it separate from the user application.
-- `packages/data-ops`: `@repo/data-ops`, the reusable data layer. It owns Drizzle schemas, database clients, Better Auth setup, shared queries, and shared Zod schemas.
+- `apps/user-application`: `jd-start-app`, the TanStack Start user-facing application deployed on Cloudflare. It owns UI, SSR, TanStack Server Functions, authentication-facing application logic, and the existing billing experience.
+- `packages/backend`: `@repo/backend`, the Convex backend. It owns the database, queries, mutations, actions, HTTP Actions, Better Auth persistence, Polar synchronization, and scheduled or asynchronous backend work.
 
 Demo and example files are intentional teaching/reference material in the template. Do not remove them unless explicitly requested.
 
@@ -22,28 +21,24 @@ Run commands from the repository root unless stated otherwise.
 
 ```bash
 pnpm run setup
-pnpm run build:data-ops
 pnpm run dev:user-application
+pnpm run dev:backend
 pnpm run deploy:user-application
-pnpm run dev:data-service
-pnpm run deploy:data-service
+pnpm run deploy:backend
 
 pnpm dev
 pnpm build
 pnpm typecheck
 pnpm test
 
-pnpm pull-drizzle-schema
-pnpm generate-auth-drizzle-schema
-pnpm generate-drizzle-sql-output
 pnpm skills:sync
 ```
 
 `pnpm test` reports that no automated suite exists until real tests are added; it must not be treated as a passing test suite. Deployment commands are documented for users but must be run only when deployment is explicitly requested.
 
-## Database
+## Convex
 
-The default path is Neon → PostgreSQL → Drizzle ORM → `drizzle-orm/neon-http` → Better Auth PostgreSQL. Provider flexibility is intentional: documented PlanetScale, Supabase, Cloudflare D1, SQLite-compatible, and other relational paths are alternatives, not simultaneously active defaults. Never run migrations or destructive database operations without explicit authorization.
+Convex is the single primary backend and data platform in this variant. Do not add PostgreSQL, Drizzle, or another fallback data layer. Read `packages/backend/convex/_generated/ai/guidelines.md` before changing Convex functions. Run `pnpm dev:backend` for development code generation. Run `pnpm deploy:backend` only when deployment is explicitly requested.
 
 ## Source Inspection
 
