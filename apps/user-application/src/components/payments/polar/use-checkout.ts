@@ -1,13 +1,19 @@
 import { useMutation } from "@tanstack/react-query";
-import { createPaymentLink } from "@/core/functions/payments";
+import { useConvexAction } from "@convex-dev/react-query";
+import { api } from "@repo/backend/convex/_generated/api";
 
 export function useCheckout() {
+  const generateCheckoutLink = useConvexAction(
+    api.billing.generateCheckoutLink,
+  );
   const checkoutMutation = useMutation({
     mutationFn: async (productId: string) => {
-      return await createPaymentLink({
-        data: {
-          productId,
-        },
+      const origin = window.location.origin;
+      return await generateCheckoutLink({
+        productIds: [productId],
+        origin,
+        successUrl: `${origin}/app/polar/checkout/success?checkout_id={CHECKOUT_ID}`,
+        locale: "fr",
       });
     },
   });

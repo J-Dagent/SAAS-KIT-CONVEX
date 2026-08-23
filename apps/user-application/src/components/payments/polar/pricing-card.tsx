@@ -33,14 +33,18 @@ export function PricingCard({
       return "Devise non précisée";
     }
 
-    if (price.amountType === "fixed" && price.priceAmount) {
+    if (
+      price.amountType === "fixed" &&
+      price.priceAmount &&
+      price.priceCurrency
+    ) {
       return new Intl.NumberFormat("fr-FR", {
         style: "currency",
         currency: price.priceCurrency.toUpperCase(),
       }).format(price.priceAmount / 100);
     }
 
-    if (price.amountType === "custom") {
+    if (price.amountType === "custom" && price.priceCurrency) {
       const min = price.minimumAmount ? price.minimumAmount / 100 : 0;
       const max = price.maximumAmount ? price.maximumAmount / 100 : null;
       const formatter = new Intl.NumberFormat("fr-FR", {
@@ -63,7 +67,7 @@ export function PricingCard({
       .map(([_, value]) => value);
   };
 
-  const features = getFeatures(product.metadata);
+  const features = getFeatures(product.metadata ?? {});
 
   const renderButton = () => {
     if (!price) {

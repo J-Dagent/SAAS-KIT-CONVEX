@@ -4,18 +4,30 @@ import {
   Outlet,
   Scripts,
   createRootRouteWithContext,
+  useRouteContext,
 } from "@tanstack/react-router";
+import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
+import type { AuthClient } from "@convex-dev/better-auth/react";
+import type { ConvexQueryClient } from "@convex-dev/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import * as React from "react";
+import { createServerFn } from "@tanstack/react-start";
 import type { QueryClient } from "@tanstack/react-query";
 import { DefaultCatchBoundary } from "@/components/default-catch-boundary";
 import { NotFound } from "@/components/not-found";
 import { ThemeProvider } from "@/components/theme";
 import appCss from "@/styles.css?url";
 import { seo } from "@/utils/seo";
+import { authClient } from "@/lib/auth-client";
+import { getToken } from "@/lib/auth-server";
+
+const getAuthToken = createServerFn({ method: "GET" }).handler(async () => {
+  return await getToken();
+});
 
 export const Route = createRootRouteWithContext<{
+  convexQueryClient: ConvexQueryClient;
   queryClient: QueryClient;
 }>()({
   head: () => ({
@@ -30,7 +42,7 @@ export const Route = createRootRouteWithContext<{
       ...seo({
         title: "Acadelead | Template SaaS moderne sur Cloudflare",
         description:
-          "Un template SaaS réutilisable avec TanStack Start, React, TypeScript, Better Auth, Drizzle et Cloudflare.",
+          "Un template SaaS réutilisable avec TanStack Start, React, TypeScript, Better Auth, Convex et Cloudflare.",
       }),
     ],
     links: [
@@ -65,21 +77,39 @@ export const Route = createRootRouteWithContext<{
     );
   },
   notFoundComponent: () => <NotFound />,
+  beforeLoad: async ({ context }) => {
+    const token = await getAuthToken();
+    if (token) {
+      context.convexQueryClient.serverHttpClient?.setAuth(token);
+    }
+    return {
+      isAuthenticated: Boolean(token),
+      token,
+    };
+  },
   component: RootComponent,
 });
 
 function RootComponent() {
+  const context = useRouteContext({ from: Route.id });
+
   return (
-    <RootDocument>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange={false}
-      >
-        <Outlet />
-      </ThemeProvider>
-    </RootDocument>
+    <ConvexBetterAuthProvider
+      client={context.convexQueryClient.convexClient}
+      authClient={authClient as AuthClient}
+      initialToken={context.token}
+    >
+      <RootDocument>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange={false}
+        >
+          <Outlet />
+        </ThemeProvider>
+      </RootDocument>
+    </ConvexBetterAuthProvider>
   );
 }
 

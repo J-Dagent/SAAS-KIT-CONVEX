@@ -1,5 +1,6 @@
-import { collectSubscription, validPayment } from "@/core/functions/payments";
-import { useQuery } from "@tanstack/react-query";
+import { api } from "@repo/backend/convex/_generated/api";
+import { convexQuery } from "@convex-dev/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -15,18 +16,17 @@ export const Route = createFileRoute("/_auth/app/polar/checkout/success")({
   beforeLoad: async ({ search }) => {
     return search;
   },
-  loader: async (input) => {
-    const isValid = await validPayment({
-      data: input.context.checkout_id,
-    });
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(
+      convexQuery(api.billing.getCurrentSubscription, {}),
+    );
     return {
-      isValid,
-      checkoutId: input.context.checkout_id,
+      checkoutId: context.checkout_id,
     };
   },
   errorComponent: ({ error }) => {
     return (
-      <div className="h-ful flex flex-col items-center justify-center bg-background px-6 py-12">
+      <div className="h-full flex flex-col items-center justify-center bg-background px-6 py-12">
         <div className="max-w-lg w-full text-center space-y-8">
           <div className="flex justify-center">
             <AlertCircle className="w-16 h-16 text-destructive" />
@@ -54,21 +54,13 @@ function RouteComponent() {
   const loaderData = Route.useLoaderData();
   const nav = Route.useNavigate();
 
-  const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: [loaderData.checkoutId],
-    queryFn: collectSubscription,
-    refetchInterval: (query) => {
-      if (!query.state.data) {
-        return 2000;
-      }
-      return false;
-    },
-  });
+  const { data, error } = useSuspenseQuery(
+    convexQuery(api.billing.getCurrentSubscription, {}),
+  );
 
   const getStatus = () => {
     if (error) return "error";
     if (data) return "success";
-    if (isFetching || isLoading) return "processing";
     return "processing";
   };
 

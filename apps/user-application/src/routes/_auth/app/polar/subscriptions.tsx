@@ -1,4 +1,5 @@
-import { getProducts, collectSubscription } from "@/core/functions/payments";
+import { api } from "@repo/backend/convex/_generated/api";
+import { convexQuery } from "@convex-dev/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { PricingGrid, useCheckout } from "@/components/payments/polar";
@@ -7,30 +8,24 @@ export const Route = createFileRoute("/_auth/app/polar/subscriptions")({
   component: RouteComponent,
   loader: async ({ context }) => {
     await Promise.all([
-      context.queryClient.prefetchQuery({
-        queryKey: ["products"],
-        queryFn: getProducts,
-      }),
-      context.queryClient.prefetchQuery({
-        queryKey: ["subscription"],
-        queryFn: collectSubscription,
-      }),
+      context.queryClient.prefetchQuery(
+        convexQuery(api.billing.listAllProducts, {}),
+      ),
+      context.queryClient.prefetchQuery(
+        convexQuery(api.billing.getCurrentSubscription, {}),
+      ),
     ]);
   },
 });
 
 function RouteComponent() {
-  const { data: products } = useSuspenseQuery({
-    queryKey: ["products"],
-    queryFn: getProducts,
-    refetchOnWindowFocus: true,
-  });
+  const { data: products } = useSuspenseQuery(
+    convexQuery(api.billing.listAllProducts, {}),
+  );
 
-  const { data: subscription } = useSuspenseQuery({
-    queryKey: ["subscription"],
-    queryFn: collectSubscription,
-    refetchOnWindowFocus: true,
-  });
+  const { data: subscription } = useSuspenseQuery(
+    convexQuery(api.billing.getCurrentSubscription, {}),
+  );
 
   const { redirectToCheckout, isCheckoutPending } = useCheckout();
 

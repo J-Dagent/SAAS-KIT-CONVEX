@@ -70,7 +70,7 @@ export function CoursePromoSection() {
                 <div className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5" />
                   <span className="text-sm">
-                    Neon, PostgreSQL et Drizzle ORM
+                    Convex Database et fonctions serveur
                   </span>
                 </div>
                 <div className="flex items-start gap-2">
@@ -81,7 +81,7 @@ export function CoursePromoSection() {
                 </div>
                 <div className="flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5" />
-                  <span className="text-sm">TypeScript, Drizzle ORM, pnpm</span>
+                  <span className="text-sm">TypeScript, temps réel, pnpm</span>
                 </div>
               </div>
             </div>

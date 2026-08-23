@@ -3,6 +3,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { GoogleLogin } from "@/components/auth/google-login";
 import { authClient } from "@/lib/auth-client";
+import { useConvexAuth } from "@convex-dev/react-query";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_auth")({
@@ -12,14 +13,15 @@ export const Route = createFileRoute("/_auth")({
 function RouteComponent() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const session = authClient.useSession();
+  const convexAuth = useConvexAuth();
 
   return (
     <>
-      {session.isPending ? (
+      {session.isPending || convexAuth.isLoading ? (
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-      ) : session.data ? (
+      ) : session.data && convexAuth.isAuthenticated ? (
         <div className="flex h-screen bg-background overflow-hidden">
           <Sidebar className="flex-shrink-0" />
           

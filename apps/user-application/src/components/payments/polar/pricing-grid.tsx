@@ -14,7 +14,7 @@ export function PricingGrid({
   onCheckout,
   isCheckoutPending,
 }: PricingGridProps) {
-  const sortedProducts = products.sort((a, b) => {
+  const sortedProducts = [...products].sort((a, b) => {
     const aAmount =
       a.prices[0]?.amountType === "fixed" ? a.prices[0].priceAmount : 0;
     const bAmount =

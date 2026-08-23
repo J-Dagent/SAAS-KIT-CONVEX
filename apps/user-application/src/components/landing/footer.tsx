@@ -12,7 +12,7 @@ const navigation = {
     { name: "Vite", href: "https://vitejs.dev" },
     { name: "Shadcn/UI", href: "https://ui.shadcn.com" },
     { name: "pnpm Workspaces", href: "https://pnpm.io/workspaces" },
-    { name: "Drizzle ORM", href: "https://orm.drizzle.team" },
+    { name: "Convex", href: "https://www.convex.dev" },
   ],
   social: [
     {

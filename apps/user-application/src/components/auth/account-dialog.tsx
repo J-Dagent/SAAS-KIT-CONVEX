@@ -19,7 +19,11 @@ export function AccountDialog({ children }: AccountDialogProps) {
   const { data: session } = authClient.useSession();
 
   const signOut = async () => {
-    await authClient.signOut();
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => window.location.reload(),
+      },
+    });
   };
 
   if (!session) {

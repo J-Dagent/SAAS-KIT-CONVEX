@@ -1,39 +1,36 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { protectedRequestMiddleware } from "@/core/middleware/auth";
-import { Polar } from "@polar-sh/sdk";
-import { env } from "cloudflare:workers";
+import { api } from "@repo/backend/convex/_generated/api";
+import { fetchAuthAction, fetchAuthQuery } from "@/lib/auth-server";
 import { createPostHogClient } from "@/lib/posthog";
-import { getPolarServer } from "@/lib/polar";
 
 export const Route = createFileRoute("/_auth/app/polar/portal")({
   server: {
-    middleware: [protectedRequestMiddleware],
     handlers: {
-      GET: async (ctx) => {
+      GET: async ({ request }) => {
         const posthog = createPostHogClient();
-        const polar = new Polar({
-          accessToken: env.POLAR_SECRET,
-          server: getPolarServer(env.POLAR_SERVER),
-        });
         try {
-          const customerSession = await polar.customerSessions.create({
-            externalCustomerId: ctx.context.userId,
-          });
+          const requestUrl = new URL(request.url);
+          const [user, customerSession] = await Promise.all([
+            fetchAuthQuery(api.auth.getAuthUser, {}),
+            fetchAuthAction(api.billing.generateCustomerPortalUrl, {
+              returnUrl: `${requestUrl.origin}/app/polar/subscriptions`,
+            }),
+          ]);
           posthog.capture({
-            distinctId: ctx.context.userId,
+            distinctId: user._id,
             event: "customer_portal_opened",
             properties: {
-              portal_url: customerSession.customerPortalUrl,
+              portal_url: customerSession.url,
             },
           });
           return new Response(null, {
             status: 302,
             headers: {
-              Location: customerSession.customerPortalUrl,
+              Location: customerSession.url,
             },
           });
         } catch (err) {
-          posthog.captureException(err, ctx.context.userId);
+          posthog.captureException(err);
           throw err;
         }
       },

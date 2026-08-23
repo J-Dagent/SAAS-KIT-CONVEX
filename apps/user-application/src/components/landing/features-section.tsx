@@ -64,9 +64,9 @@ const features = [
 
 const templateFeatures = [
   {
-    image: "/cloudflare.png",
-    title: "Base de données edge",
-    description: "PostgreSQL serverless avec Neon et Drizzle ORM, tout en conservant des chemins alternatifs documentés.",
+    image: "/convex-logo.webp",
+    title: "Backend temps réel",
+    description: "Base de données, fonctions serveur et abonnements temps réel avec Convex.",
     badge: "Base de données",
     highlight: true
   },
@@ -87,7 +87,7 @@ const templateFeatures = [
   {
     image: "/pnpm.webp",
     title: "Architecture monorepo",
-    description: "Espaces de travail pnpm structurés entre applications, service de données et package partagé.",
+    description: "Espaces de travail pnpm structurés entre l’application TanStack Start et le backend Convex.",
     badge: "Architecture",
     highlight: true
   }
