@@ -7,7 +7,7 @@ The workspace has two runtime boundaries:
 - `apps/user-application` runs TanStack Start on Cloudflare Workers.
 - `packages/backend` runs the Convex database, functions, Better Auth, and Polar integration.
 
-Public pages do not initialize Convex or request an authentication session by default. A form or anonymous agent can mount the dedicated public Convex provider inside that feature only. The private `/app` route creates the authenticated Convex client and checks Better Auth before it renders private data.
+The root creates one passive Convex client. Public pages do not request an authentication session or token, and they contact Convex only when a component calls a public function. The private `/app` route adds Better Auth to the same client before it renders private data.
 
 ## Install
 
@@ -60,4 +60,4 @@ pnpm test
 pnpm build
 ```
 
-The normal production build intentionally works without Convex variables so public routes can still be built and served. The deployment command applies stricter checks and refuses missing or local Convex URLs.
+Production requires the public Convex Cloud URLs. The deployment command refuses missing or local URLs, and the post-build check rejects leaked loopback URLs or real secret values.

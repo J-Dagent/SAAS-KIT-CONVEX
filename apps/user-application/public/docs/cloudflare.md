@@ -4,7 +4,7 @@
 
 The `jd-convex-start-app` Worker serves TanStack Start SSR, static assets, public pages, and the Better Auth proxy route. Convex owns the database and backend functions.
 
-The public landing page and documentation render without creating a Convex client or requesting a session. A specific public feature may mount `PublicConvexProvider` locally for anonymous Convex calls. Better Auth and token-bearing Convex access remain limited to `/app` and `/api/auth/*`.
+The application creates one passive Convex client at the root. Public pages make no request until a component calls a public Convex function. Better Auth and token retrieval remain limited to `/app` and `/api/auth/*`.
 
 ## Configuration
 
@@ -32,7 +32,7 @@ The command validates both Convex Cloud URLs before Vite builds the Worker. A lo
 
 ## Troubleshooting
 
-- A 500 on every route usually means auth or Convex was initialized globally. Public routes must stay outside the private provider.
+- A 500 on every route usually means the public Convex URL is missing from the production build or auth work escaped the `/app` boundary.
 - A 500 only under `/app` usually means the Convex Cloud URLs, deployment, or Better Auth environment is missing.
 - An OAuth callback error usually means `SITE_URL` and the Google authorized redirect URI do not match the Worker origin.
 - Inspect runtime failures with `wrangler tail jd-convex-start-app`.

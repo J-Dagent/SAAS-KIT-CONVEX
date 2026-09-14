@@ -3,21 +3,20 @@
   "signals": [
     {"path": "pnpm-workspace.yaml", "fact": "pnpm monorepo with apps/* and packages/*"},
     {"path": "apps/user-application/package.json", "fact": "user-facing application uses TanStack Start/Router/Query, React, Zod and Tailwind"},
-    {"path": "apps/data-service/package.json", "fact": "separate service uses Hono and runs as a Cloudflare Worker"},
-    {"path": "packages/data-ops/package.json", "fact": "shared data layer uses Drizzle ORM, Better Auth and Zod"},
-    {"path": "packages/data-ops/src/database/setup.ts", "fact": "current runtime database path uses Neon PostgreSQL through drizzle-orm/neon-http"},
-    {"path": "AGENTS.md", "fact": "repository preserves separate user-application, data-service and shared data-ops ownership boundaries"},
+    {"path": "packages/backend/package.json", "fact": "the Convex backend owns application data, Better Auth persistence and Polar synchronization"},
+    {"path": "packages/backend/convex/schema.ts", "fact": "Convex is the current database and typed function backend"},
+    {"path": "AGENTS.md", "fact": "repository preserves separate user-application and Convex backend ownership boundaries"},
     {"path": "apps/user-application/wrangler.jsonc", "fact": "user application deploys to Cloudflare"},
-    {"path": "apps/data-service/wrangler.jsonc", "fact": "data service deploys to Cloudflare"}
+    {"path": "packages/backend/convex/convex.config.ts", "fact": "Better Auth and Polar are mounted as Convex components"}
   ],
   "expected_detection": {
     "workspace": "pnpm monorepo",
-    "boundaries": ["user application", "data service", "shared data layer"],
+    "boundaries": ["user application", "Convex backend"],
     "frontend": ["TanStack Start", "React"],
-    "service": ["Hono"],
-    "data": ["Drizzle ORM", "PostgreSQL", "Neon"],
+    "service": ["Convex functions", "HTTP Actions"],
+    "data": ["Convex Database"],
     "auth": ["Better Auth"],
-    "validation": ["Zod"],
-    "deployment": ["Cloudflare Workers"]
+    "validation": ["Convex validators", "Zod"],
+    "deployment": ["Cloudflare Workers", "Convex Cloud"]
   }
 }

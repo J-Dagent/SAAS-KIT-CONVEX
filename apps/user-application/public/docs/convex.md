@@ -121,24 +121,14 @@ Production uses Convex Cloud. The selected release owner validates configuration
 
 ## TanStack Start connection
 
-`router.tsx` creates a plain TanStack `QueryClient` for every route. The `/_auth` layout connects a `ConvexQueryClient` only when `/app` is entered. Private route loaders use `convexQuery(...)` to preload data during SSR. The browser hydrates that data and resumes the same live subscription without adding a second data layer.
+`router.tsx` creates one `QueryClient` and one `ConvexQueryClient`. The adapter stays passive until a component or loader requests a Convex function. Private route loaders use `convexQuery(...)` to preload data during SSR. The browser hydrates that data and resumes the same live subscription.
 
 TanStack Server Functions remain appropriate for logic owned by the Cloudflare/TanStack server layer. Do not wrap ordinary Convex queries, mutations, or actions in Server Functions.
 
-## Anonymous Convex on public routes
+## Convex on public routes
 
-Public routes never require Better Auth or a Convex token. When one public feature needs Convex, mount `PublicConvexProvider` around that feature instead of changing `__root`:
+Public routes never require Better Auth or a Convex token. A public component can use `useConvexQuery`, `useConvexMutation`, or `useConvexAction` with a public function through the root client. Components that do not call Convex create no subscription or request.
 
-```tsx
-<PublicConvexProvider>
-  <ContactForm />
-</PublicConvexProvider>
-```
-
-The provider creates an unauthenticated `ConvexReactClient` only when React mounts it. Other landing and documentation routes remain independent from Convex availability.
-
-Anonymous functions belong in `packages/backend/convex/public.ts`. `submitAnonymousRequest` demonstrates the contract: Convex validates the arguments and business limits, then applies a per-client token bucket and a global fixed-window limit before writing. The function exposes no read API for submitted content.
-
-Generate the anonymous identifier in the browser with `crypto.randomUUID()` and keep it in local storage. This identifier improves fairness but is not an identity or authorization credential. Expensive operations such as an AI action should also verify Cloudflare Turnstile before paying for external model usage.
+Each public function owns its argument validation and abuse controls. Add rate limiting or bot verification when a real form, agent, or paid operation needs it. Do not add a second provider or a generic anonymous persistence layer.
 
 `VITE_CONVEX_URL` and `VITE_CONVEX_SITE_URL` are public deployment endpoints. Browser bundles must contain them, so configure them as ordinary build variables. Credentials such as `CONVEX_DEPLOY_KEY`, OAuth client secrets, Better Auth secrets, and Polar tokens remain secrets.

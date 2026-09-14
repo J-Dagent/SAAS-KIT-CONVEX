@@ -9,7 +9,7 @@ A Convex-native variant of the JD SaaS Kit. It keeps the TanStack Start and Clou
 
 Cloudflare owns the frontend worker and static assets. Convex is the only application database and backend platform in this variant.
 
-Public routes require neither Better Auth nor a Convex token. A public feature can opt into the lazy anonymous Convex provider without changing the root route. The private `/app` boundary owns authenticated Convex access.
+The root exposes one passive Convex client. Public routes require neither Better Auth nor a Convex token, and a public component can call a public Convex function directly. The private `/app` boundary owns authenticated Convex access.
 
 ## Setup
 
@@ -45,7 +45,7 @@ pnpm build
 pnpm test
 ```
 
-The frontend tests cover the local and production Convex URL boundary and private route guards.
+The frontend tests cover the Better Auth integration and private route guards.
 
 ## Deployment
 

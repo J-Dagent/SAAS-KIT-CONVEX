@@ -13,7 +13,7 @@ Google button
   -> authenticated Convex client
 ```
 
-The visible login, account, and logout flows match the relational template. Convex replaces the Drizzle database adapter and owns the session data.
+Convex owns Better Auth session data while the existing login, account, and logout UI stays unchanged.
 
 ## Required environment variables
 
@@ -63,9 +63,9 @@ The callback stays on the application domain because TanStack Start keeps `/api/
 
 ## Public and private route boundary
 
-The root route does not import Better Auth or create a Convex client. Public pages therefore render even when the private backend is unavailable. A public feature that needs anonymous Convex mounts its own lazy provider and never requests an auth token.
+The root route creates one passive Convex client but does not initialize Better Auth or request a token. Public components can call public Convex functions through that client without entering the authenticated boundary.
 
-The `/_auth` layout owns the private boundary behind `/app`. It creates the Convex client, reads the Better Auth token during SSR, assigns that token to the Convex HTTP client, and mounts `ConvexBetterAuthProvider` for its children only.
+The `/_auth` layout owns the private boundary behind `/app`. It reads the Better Auth token during SSR, assigns that token to the root Convex HTTP client, and mounts `ConvexBetterAuthProvider` for its children only.
 
 Use `useConvexAuth()`, `Authenticated`, or `Unauthenticated` before calling protected Convex functions. A Better Auth browser session can exist briefly before the Convex client has validated its token.
 

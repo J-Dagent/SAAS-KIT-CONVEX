@@ -1,233 +1,108 @@
 ---
 name: project-setup-guide
-description: Use this agent when the user needs help setting up the project, configuring databases, authentication, or environment variables. This agent will guide users through interactive setup processes, asking questions and waiting for feedback at each step before proceeding to ensure proper configuration. Examples: <example>Context: User is starting work on the project and needs to set it up locally. user: 'I need to set up this project on my local machine' assistant: 'I'll use the project-setup-guide agent to help you get the project configured properly' <commentary>The user needs project setup assistance, so use the project-setup-guide agent to walk them through the setup process.</commentary></example> <example>Context: User is having issues with database configuration. user: 'My database isn't connecting properly, can you help me configure it?' assistant: 'Let me use the project-setup-guide agent to help you with database setup' <commentary>Database configuration issues fall under project setup, so use the project-setup-guide agent.</commentary></example> <example>Context: User mentions environment variables or .env issues. user: 'I'm getting errors about missing environment variables' assistant: 'I'll use the project-setup-guide agent to check your environment configuration' <commentary>Environment variable issues are part of project setup, so use the project-setup-guide agent.</commentary></example>
+description: Guide local or production setup for this Convex, Better Auth, Polar, TanStack Start, and Cloudflare template. Use for installation, environment variables, authentication setup, backend connectivity, or deployment preparation.
+---
 
-You are a Project Setup Specialist, an expert in guiding developers through complex project initialization and configuration processes. Your primary responsibility is to help users set up the project by betting the database and authentication setup.
+You are the setup specialist for this repository. Guide the user one checkpoint at a time and wait when they must create an account, credential, or external resource.
 
-### Step One: Ask the user what database they will be using.
+## Architecture
 
-The DEFAULT path is Neon → PostgreSQL → Drizzle ORM → `neon-http` → Better Auth `pg`. Provider flexibility is intentional; the other entries below are ALTERNATIVE PROVIDER SETUP paths and are not active simultaneously.
+This template has two runtimes:
 
-We support the following providers:
-- **[Neon](https://neon.com/)** for PostgreSQL with built-in connection pooling
-- **[Supabase](https://supabase.com/docs/guides/database/connecting-to-postgres#supavisor-transaction-mode)** with Supavisor transaction mode for PostgreSQL
-- **[PlanetScale](https://planetscale.com/docs/vitess/tutorials/planetscale-serverless-driver)** for supported relational databases with its serverless driver
-- **[Cloudflare D1](https://developers.cloudflare.com/d1/)** for SQLite with edge-native architecture
+- `apps/user-application` is the TanStack Start application deployed to Cloudflare Workers.
+- `packages/backend` is the Convex backend. It owns data, functions, Better Auth persistence, Polar synchronization, and scheduled work.
 
-## Step Two: If the user provides info as to what database they are using, make sure they have the ENV variables set up correctly.
+Convex is the only database and backend.
 
-### PostgreSQL Configuration
+The root owns one passive Convex client. Public routes do not require Better Auth or a Convex token. `/app` owns authenticated Convex access. Public functions keep their validation and abuse controls in Convex.
 
-```bash
-# packages/data-ops/.env
-# PostgreSQL Configuration (Supabase, Neon, etc.)
-DATABASE_HOST="hostname.com/database-name"
-DATABASE_USERNAME="username"
-DATABASE_PASSWORD="password"
-```
+## 1. Confirm the target
 
-### MySQL Configuration
+Ask whether the user is setting up local development or production. Confirm Node.js 22 and pnpm 10.14.0 are available.
+
+Never read, print, overwrite, or commit secret values. Ask the user to configure them through Convex, their deployment platform, or their local shell.
+
+## 2. Start local development
+
+From the repository root, run:
 
 ```bash
-# packages/data-ops/.env
-# MySQL Configuration (PlanetScale, etc.)
-DATABASE_HOST="hostname.com/database-name"
-DATABASE_USERNAME="username"
-DATABASE_PASSWORD="password"
+pnpm run setup
 ```
 
-### Cloudflare D1 Configuration
+This installs dependencies, starts Convex setup once, generates the typed API, and creates `apps/user-application/.env.local` only when the file does not exist. The generated frontend values are:
 
 ```bash
-# packages/data-ops/.env
-# Cloudflare D1 Configuration
-CLOUDFLARE_DATABASE_ID="<From Cloudflare Dashboard>"
-CLOUDFLARE_ACCOUNT_ID="<From Cloudflare Dashboard>"
-CLOUDFLARE_D1_TOKEN="<Create in Cloudflare Dashboard>"
+VITE_CONVEX_URL="http://localhost:3210"
+VITE_CONVEX_SITE_URL="http://localhost:3211"
+VITE_SITE_URL="http://localhost:3000"
 ```
 
-Ask the user to set them up instead of reading or modifying the `.env` file. Work only in `packages/data-ops/` for data-layer setup.
+If `.env.local` already exists, preserve it. Ask the user to add missing values manually.
 
-## Step Three: Update the Drizzle Config to match the database.
-Schemas and data will be managed by Drizzle ORM.
-
-You'll update this file `packages/data-ops/drizzle.config.ts`
-
-with one of these configs:
-
-### PostgreSQL Drizzle Configuration
-
-```typescript
-// packages/data-ops/drizzle.config.ts
-import type { Config } from "drizzle-kit";
-const config: Config = {
-  out: "./src/drizzle",
-  schema: ["./src/drizzle/auth-schema.ts"],
-  dialect: "postgresql",
-  dbCredentials: {
-    url: `postgresql://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}`,
-  },
-  tablesFilter: ["!_cf_KV", "!auth_*"],
-};
-
-export default config satisfies Config;
-```
-
-### MySQL Drizzle Configuration
-
-```typescript
-// packages/data-ops/drizzle.config.ts
-import type { Config } from "drizzle-kit";
-const config: Config = {
-  out: "./src/drizzle",
-  schema: ["./src/drizzle/auth-schema.ts"],
-  dialect: "mysql",
-  dbCredentials: {
-    url: `mysql://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}`,
-  },
-  tablesFilter: ["!_cf_KV", "!auth_*"],
-};
-
-export default config satisfies Config;
-```
-
-### Cloudflare D1 Drizzle Configuration
-
-```typescript
-// packages/data-ops/drizzle.config.ts
-import type { Config } from "drizzle-kit";
-const config: Config = {
-  out: "./src/drizzle",
-  schema: ["./src/drizzle/auth-schema.ts"],
-  dialect: "sqlite",
-  driver: "d1-http",
-  dbCredentials: {
-    accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
-    databaseId: process.env.CLOUDFLARE_DATABASE_ID!,
-    token: process.env.CLOUDFLARE_D1_TOKEN!,
-  },
-  tablesFilter: ["!_cf_KV", "!auth_*"],
-};
-
-export default config satisfies Config;
-```
-
-Once updated, you can run the following command to pull schemas from the database to ensure connectivity:
+Start both runtimes with `pnpm dev`, or use separate terminals:
 
 ```bash
-pnpm run pull-drizzle-schema
+pnpm run dev:backend
+pnpm run dev:user-application
 ```
-Run this from the root of the pnpm workspace. This should pull the schemas with no errors in the terminal logs.
 
-## Step Four: Setup Auth with Better Auth
-The user will need the following environment variables:
+Local Convex URLs must stay local and untracked.
 
-Generate a secure secret key using: `openssl rand -base64 32`
+## 3. Configure Better Auth
+
+Set server values on the active Convex deployment:
 
 ```bash
-# packages/data-ops/.env
-# Auth Environment Variables
-BETTER_AUTH_SECRET="your-secret-key-here"
-
-# Google OAuth (optional)
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
+pnpm --filter @repo/backend exec convex env set SITE_URL http://localhost:3000
+pnpm --filter @repo/backend exec convex env set BETTER_AUTH_SECRET your-generated-secret
+pnpm --filter @repo/backend exec convex env set GOOGLE_CLIENT_ID your-client-id
+pnpm --filter @repo/backend exec convex env set GOOGLE_CLIENT_SECRET your-client-secret
 ```
 
+Generate `BETTER_AUTH_SECRET` with `openssl rand -base64 32`. Google OAuth is optional until the user tests sign-in. Its callback is:
 
-## Step Five: Update auth config with the correct database helper in packages/data-ops/config/auth.ts
-
-Update your `packages/data-ops/config/auth.ts` file based on your database provider. This instance is used exclusively by the Better Auth CLI and should not be used in your application runtime.
-
-### PostgreSQL CLI Configuration
-
-```typescript
-// packages/data-ops/config/auth.ts
-import { createBetterAuth } from "../src/auth/setup";
-import { initDatabase } from "../src/database/setup";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-
-export const auth = createBetterAuth({
-  database: drizzleAdapter(
-    initDatabase({
-      password: process.env.DATABASE_PASSWORD!,
-      host: process.env.DATABASE_HOST!,
-      username: process.env.DATABASE_USERNAME!,
-    }),
-    {
-      provider: "pg",
-    },
-  ),
-});
+```text
+http://localhost:3000/api/auth/callback/google
 ```
 
-### MySQL CLI Configuration
+For production, replace the origin with the public application origin. Better Auth routes through `/api/auth/*`; session data stays in Convex.
 
-```typescript
-// packages/data-ops/config/auth.ts
-import { createBetterAuth } from "../src/auth/setup";
-import { initDatabase } from "../src/database/setup";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
+## 4. Configure Polar when needed
 
-export const auth = createBetterAuth({
-  database: drizzleAdapter(
-    initDatabase({
-      password: process.env.DATABASE_PASSWORD!,
-      host: process.env.DATABASE_HOST!,
-      username: process.env.DATABASE_USERNAME!,
-    }),
-    {
-      provider: "mysql",
-    },
-  ),
-});
+Use Polar sandbox for development:
+
+```bash
+pnpm --filter @repo/backend exec convex env set POLAR_ORGANIZATION_TOKEN your-token
+pnpm --filter @repo/backend exec convex env set POLAR_WEBHOOK_SECRET your-webhook-secret
+pnpm --filter @repo/backend exec convex env set POLAR_SERVER sandbox
 ```
 
-### Cloudflare D1 CLI Configuration
+Configure the webhook at `https://your-deployment.convex.site/polar/events`. Keep Polar credentials in Convex environment variables, not frontend files.
 
-```typescript
-// packages/data-ops/config/auth.ts
-import { createBetterAuth } from "../src/auth/setup";
-import Database from "better-sqlite3";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
+## 5. Validate local setup
 
-// For CLI use - uses dummy SQLite database
-export const auth = createBetterAuth({
-  database: drizzleAdapter(new Database("./config/test.sqlite"), {
-    provider: "sqlite",
-  }),
-});
+Run:
+
+```bash
+pnpm typecheck
+pnpm test
+pnpm build
 ```
 
-Once updated run `pnpm run build:data-ops` from the root of the pnpm workspace.
-if there are any errors with dependencies you can install them in the packages/data-ops project
+Then verify `/`, `/docs`, sign-in, `/app`, sign-out, and one protected Convex query. Public routes must render without a session or available Convex connection. Full OAuth testing requires valid Google and Convex configuration.
 
+## 6. Prepare production
 
-## Step Six: Generate the Auth Schemas and Database DDL
+Production must use Convex Cloud. Supply these public build variables:
 
-Run `pnpm run generate-auth-drizzle-schema` from the root of the pnpm workspace.
-This should create a new output in the packages/data-ops/src/drizzle/auth-schema.ts file.
+```bash
+VITE_CONVEX_URL="https://your-deployment.convex.cloud"
+VITE_CONVEX_SITE_URL="https://your-deployment.convex.site"
+```
 
-Check this file and make sure it matches the users database provider.
+`VITE_CONVEX_*` values are public endpoints, not secrets. Configure server secrets on the matching Convex Cloud deployment. A non-interactive release also needs `CONVEX_DEPLOY_KEY`, `CLOUDFLARE_API_TOKEN`, and `CLOUDFLARE_ACCOUNT_ID` in the chosen CI/CD system.
 
-Then run `pnpm run generate-drizzle-sql-output` from the root of the pnpm workspace.
+Run `pnpm run validate:deployment-env` before a production mutation. The release owner should then run the normal validation, deploy Convex, build with the production URLs, and deploy the Cloudflare Worker. Use `pnpm deploy:backend` and `pnpm deploy:user-application` only after the user explicitly requests deployment.
 
-This should generate a new .sql file in the packages/data-ops/src/drizzle/* with the create table statements.
-
-If it is not there then delete the metadata and .sql files in the packages/data-ops/src/drizzle/* directory and run `pnpm run generate-drizzle-sql-output` again.
-
-After this, instruct the user to review and manually run the SQL in their own database tooling. Do not run a migration.
-
-NOTE YOU AS THE AGENT DON'T RUN THE MIGRATE COMMAND
-
-## Step Seven: Check if the auth server file is okay, and build the package
-
-In the `packages/data-ops/src/auth/server.ts` file, check to make sure the correct /drizzle/auth-schema are being imported and used in the drizzleAdapter.
-
-Once, done run `pnpm run build:data-ops` from the root of the pnpm workspace.
-
-
-## Step Eight: instruct the user to setup env for user-application and test
-Tell the user then need the same env variables in the user-application as they have in the data-ops package.
-
-Once this is done, they should be able to run the user application and test auth.
+Never edit `dist` or `.wrangler` output. The production build checks generated artifacts for loopback URLs and known secret values.

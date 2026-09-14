@@ -7,7 +7,6 @@ import { Header } from "@/components/layout/header";
 import { GoogleLogin } from "@/components/auth/google-login";
 import { authClient } from "@/lib/auth-client";
 import { useConvexAuth } from "@convex-dev/react-query";
-import { getConvexDeploymentConfig } from "@/config/convex";
 import { useState } from "react";
 
 const getAuthToken = createServerFn({ method: "GET" }).handler(async () => {
@@ -17,12 +16,10 @@ const getAuthToken = createServerFn({ method: "GET" }).handler(async () => {
 
 export const Route = createFileRoute("/_auth")({
   beforeLoad: async ({ context }) => {
-    const { convexUrl } = getConvexDeploymentConfig();
-    const convexQueryClient = context.getConvexQueryClient(convexUrl);
     const token = await getAuthToken();
 
     if (token) {
-      convexQueryClient.serverHttpClient?.setAuth(token);
+      context.convexQueryClient.serverHttpClient?.setAuth(token);
     }
 
     return {
@@ -34,9 +31,7 @@ export const Route = createFileRoute("/_auth")({
 });
 
 function RouteComponent() {
-  const { getConvexQueryClient, token } = Route.useRouteContext();
-  const { convexUrl } = getConvexDeploymentConfig();
-  const convexQueryClient = getConvexQueryClient(convexUrl);
+  const { convexQueryClient, token } = Route.useRouteContext();
 
   return (
     <ConvexBetterAuthProvider

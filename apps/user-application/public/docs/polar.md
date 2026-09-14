@@ -13,7 +13,7 @@ Pricing UI
   -> reactive subscription update in the UI
 ```
 
-The Convex component stores synchronized Polar products, customers, and subscriptions in its isolated tables. PostgreSQL subscription tables and direct TanStack Polar middleware are not used.
+The Convex component stores synchronized Polar products, customers, and subscriptions in its isolated tables.
 
 ## Create Polar credentials
 

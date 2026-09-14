@@ -11,7 +11,7 @@ This is a pnpm monorepo with two intentional boundaries:
 - `apps/user-application`: `jd-convex-start-app`, the TanStack Start user-facing application deployed on Cloudflare. It owns UI, SSR, TanStack Server Functions, authentication-facing application logic, and the existing billing experience.
 - `packages/backend`: `@repo/backend`, the Convex backend. It owns the database, queries, mutations, actions, HTTP Actions, Better Auth persistence, Polar synchronization, and scheduled or asynchronous backend work.
 
-Public routes stay independent from Better Auth and Convex tokens. A public feature may mount `PublicConvexProvider` inside its own route or component and call only anonymous-safe Convex functions with server validation and rate limiting. Keep this provider out of `__root`.
+The frontend has one passive Convex client at the root. Public routes stay independent from Better Auth and Convex tokens, and may call public Convex functions directly. Keep Better Auth and token retrieval inside `/app`; keep validation, authorization, and abuse controls in each relevant Convex function.
 
 Demo and example files are intentional teaching/reference material in the template. Do not remove them unless explicitly requested.
 

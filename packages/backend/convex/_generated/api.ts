@@ -12,7 +12,6 @@ import type * as auth from "../auth.js";
 import type * as billing from "../billing.js";
 import type * as demo from "../demo.js";
 import type * as http from "../http.js";
-import type * as public_ from "../public.js";
 
 import type {
   ApiFromModules,
@@ -26,7 +25,6 @@ const fullApi: ApiFromModules<{
   billing: typeof billing;
   demo: typeof demo;
   http: typeof http;
-  public: typeof public_;
 }> = anyApi as any;
 
 /**
@@ -58,5 +56,4 @@ export const internal: FilterApi<
 export const components = componentsGeneric() as unknown as {
   betterAuth: import("@convex-dev/better-auth/_generated/component.js").ComponentApi<"betterAuth">;
   polar: import("@convex-dev/polar/_generated/component.js").ComponentApi<"polar">;
-  rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
 };
