@@ -7,6 +7,7 @@ import remarkBreaks from "remark-breaks";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
 import { Copy, Check } from "lucide-react";
+import { DocsNavigation } from "@/components/docs/docs-navigation";
 
 const loadMarkdown = createServerFn({ method: "GET" })
   .validator((name: string) => name)
@@ -30,16 +31,16 @@ export const Route = createFileRoute("/_static/docs/$name")({
 });
 
 const markdownStyles = {
-  h1: "text-2xl sm:text-3xl font-bold my-3 sm:my-4",
-  h2: "text-xl sm:text-2xl font-semibold my-2 sm:my-3 border-b border-border pb-2",
-  h3: "text-lg sm:text-xl font-medium my-2",
-  p: "my-2 leading-relaxed text-sm sm:text-base",
+  h1: "text-3xl sm:text-4xl font-bold tracking-tight mb-8",
+  h2: "text-xl sm:text-2xl font-semibold mt-12 mb-4 border-b border-border pb-3",
+  h3: "text-lg sm:text-xl font-medium mt-8 mb-3",
+  p: "my-4 leading-7 text-sm sm:text-base text-foreground/90",
   a: "text-primary underline break-words",
   ul: "list-disc ml-4 sm:ml-6 my-2 text-sm sm:text-base",
   ol: "list-decimal ml-4 sm:ml-6 my-2 text-sm sm:text-base",
   li: "my-1",
   code: "bg-muted px-1.5 py-0.5 rounded font-mono text-xs sm:text-sm text-muted-foreground border border-border",
-  pre: "bg-muted p-2 sm:p-4 rounded-b-lg overflow-x-auto text-xs sm:text-sm shadow-md border border-border",
+  pre: "bg-zinc-950 p-3 sm:p-5 rounded-b-lg overflow-x-auto text-xs sm:text-sm border border-zinc-800 text-zinc-100",
   blockquote:
     "border-l-4 border-primary pl-3 sm:pl-4 italic my-3 sm:my-4 text-sm sm:text-base",
 };
@@ -80,15 +81,15 @@ function CodeBlock({ children, ...props }: any) {
         <button
           onClick={handleCopy}
           className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-foreground bg-primary/10 hover:bg-primary/20 transition-colors"
-          aria-label="Copier le code"
-          title={copied ? "Copié !" : "Copier"}
+          aria-label="Copy code"
+          title={copied ? "Copied" : "Copy"}
         >
           {copied ? (
             <Check className="h-3.5 w-3.5" />
           ) : (
             <Copy className="h-3.5 w-3.5" />
           )}
-          <span className="hidden sm:inline">{copied ? "Copié" : "Copier"}</span>
+          <span className="hidden sm:inline">{copied ? "Copied" : "Copy"}</span>
         </button>
       </div>
       <pre className={markdownStyles.pre + " rounded-t-none"} {...props}>
@@ -100,10 +101,12 @@ function CodeBlock({ children, ...props }: any) {
 
 function RouteComponent() {
   const { markdown: content } = Route.useLoaderData();
+  const { name } = Route.useParams();
 
   return (
-    <div className="w-full">
-      <div className="p-4 sm:p-6 max-w-4xl mx-auto">
+    <div className="mx-auto grid w-full max-w-7xl gap-12 px-4 py-10 sm:px-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:px-8 lg:py-14">
+      <DocsNavigation current={name} />
+      <article className="min-w-0 max-w-4xl">
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkBreaks]}
           rehypePlugins={[rehypeHighlight]}
@@ -118,16 +121,19 @@ function RouteComponent() {
               <h3 className={markdownStyles.h3}>{children}</h3>
             ),
             p: ({ children }) => <p className={markdownStyles.p}>{children}</p>,
-            a: ({ href, children }) => (
-              <a
-                href={href}
-                className={markdownStyles.a}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {children}
-              </a>
-            ),
+            a: ({ href, children }) => {
+              const external = href?.startsWith("http");
+              return (
+                <a
+                  href={href}
+                  className={markdownStyles.a}
+                  target={external ? "_blank" : undefined}
+                  rel={external ? "noopener noreferrer" : undefined}
+                >
+                  {children}
+                </a>
+              );
+            },
             ul: ({ children }) => (
               <ul className={markdownStyles.ul}>{children}</ul>
             ),
@@ -159,7 +165,7 @@ function RouteComponent() {
         >
           {content}
         </ReactMarkdown>
-      </div>
+      </article>
     </div>
   );
 }

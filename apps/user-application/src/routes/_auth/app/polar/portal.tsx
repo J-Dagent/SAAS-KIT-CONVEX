@@ -6,17 +6,14 @@ import { createPostHogClient } from "@/lib/posthog";
 export const Route = createFileRoute("/_auth/app/polar/portal")({
   server: {
     handlers: {
-      GET: async ({ request }) => {
+      GET: async () => {
         const posthog = createPostHogClient();
         try {
-          const requestUrl = new URL(request.url);
           const [user, customerSession] = await Promise.all([
             fetchAuthQuery(api.auth.getAuthUser, {}),
-            fetchAuthAction(api.billing.generateCustomerPortalUrl, {
-              returnUrl: `${requestUrl.origin}/app/polar/subscriptions`,
-            }),
+            fetchAuthAction(api.billing.generateCustomerPortalUrl, {}),
           ]);
-          posthog.capture({
+          posthog?.capture({
             distinctId: user._id,
             event: "customer_portal_opened",
             properties: {
@@ -30,8 +27,10 @@ export const Route = createFileRoute("/_auth/app/polar/portal")({
             },
           });
         } catch (err) {
-          posthog.captureException(err);
+          posthog?.captureException(err);
           throw err;
+        } finally {
+          await posthog?.shutdown();
         }
       },
     },

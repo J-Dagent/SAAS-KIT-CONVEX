@@ -54,7 +54,7 @@ The pricing route reads `api.billing.listAllProducts`. Product names, descriptio
 
 ## Checkout
 
-The checkout button calls `api.billing.generateCheckoutLink`. The action derives the authenticated Better Auth user on the backend and maps that user to a Polar customer. The browser then navigates to the returned checkout URL.
+The checkout button calls `api.billing.generateCheckoutLink`. The action derives the authenticated Better Auth user on the backend and maps that user to a Polar customer. The browser sends only the selected product and locale. Convex constructs the origin and success URL from `SITE_URL`, then returns the Polar URL.
 
 The success URL keeps the established route:
 
@@ -104,16 +104,14 @@ const generateCheckoutLink = useConvexAction(
 );
 
 const checkout = await generateCheckoutLink({
-  productIds: [productId],
-  origin: window.location.origin,
-  successUrl: `${window.location.origin}/app/polar/checkout/success?checkout_id={CHECKOUT_ID}`,
+  productId,
   locale: "fr",
 });
 
 window.location.href = checkout.url;
 ```
 
-The backend component supplies the authenticated customer identity. The browser supplies navigation URLs and the selected product only.
+The backend supplies the authenticated customer identity and all return URLs. This prevents a caller from replacing checkout or portal redirects with an untrusted origin.
 
 ## Authentication and identity
 

@@ -61,9 +61,11 @@ The callback stays on the application domain because TanStack Start keeps `/api/
 - `apps/user-application/src/lib/auth-server.ts` provides the TanStack Start proxy and authenticated server helpers.
 - `apps/user-application/src/lib/auth-client.ts` adds the Better Auth Convex client plugin.
 
-## SSR and client readiness
+## Public and private route boundary
 
-The root route reads the Better Auth token during SSR and assigns it to the Convex HTTP client before route loaders run. `ConvexBetterAuthProvider` receives the same initial token in the browser.
+The root route does not import Better Auth or create a Convex client. Public pages therefore render even when the private backend is unavailable. A public feature that needs anonymous Convex mounts its own lazy provider and never requests an auth token.
+
+The `/_auth` layout owns the private boundary behind `/app`. It creates the Convex client, reads the Better Auth token during SSR, assigns that token to the Convex HTTP client, and mounts `ConvexBetterAuthProvider` for its children only.
 
 Use `useConvexAuth()`, `Authenticated`, or `Unauthenticated` before calling protected Convex functions. A Better Auth browser session can exist briefly before the Convex client has validated its token.
 
@@ -91,7 +93,7 @@ await authClient.signIn.social({
 
 `AccountDialog` reads `authClient.useSession()` for the name, email, and avatar. Its sign-out callback reloads the document after Better Auth clears the session so no authenticated Convex cache survives into the signed-out UI.
 
-## Protecting application UI
+## Protecting application UI and loaders
 
 The `_auth` layout waits for both systems:
 
@@ -113,6 +115,8 @@ return <Outlet />;
 This avoids rendering protected Convex queries in the short interval between the browser session loading and the Convex client accepting its JWT.
 
 UI gates are not authorization. Every Convex function that reads private user data or performs a user-owned write must resolve the user from the authenticated backend context. Never accept a trusted user ID from browser arguments.
+
+Private route loaders call `requireAuthenticatedRoute()` before preloading Convex data. This prevents unauthenticated loaders from starting behind a component-level login screen. Convex functions repeat the identity check because route guards are navigation controls, not security boundaries.
 
 ## Server-side access
 

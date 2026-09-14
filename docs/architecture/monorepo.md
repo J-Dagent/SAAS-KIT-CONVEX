@@ -10,8 +10,8 @@
 
 `packages/backend` is the Convex project published inside the workspace as `@repo/backend`. It owns application data, queries, mutations, actions, HTTP Actions, Better Auth persistence, Polar webhook synchronization, and future scheduled work.
 
-The browser connects to Convex through the official TanStack Query adapter. TanStack Start preloads queries during SSR, then the browser resumes live subscriptions.
+The public route tree creates only a plain TanStack Query client. It does not initialize Convex or request a Better Auth session. An anonymous feature may mount the public Convex provider inside that feature only and call rate-limited public functions. The private `/_auth` layout behind `/app` connects the official Convex TanStack Query adapter, reads the server token, and mounts the authenticated provider. Private loaders check authentication before preloading data, and Convex functions enforce identity again on the backend.
 
 ## Runtime path
 
-The runtime path is Browser → Cloudflare and TanStack Start → Convex. This variant intentionally has no PostgreSQL, Drizzle, or separate data-service fallback.
+Ordinary public requests follow Browser → Cloudflare. Anonymous Convex features add an unauthenticated, rate-limited Cloudflare → Convex Cloud path. Private requests add token-bearing Convex access. Local Convex loopback URLs are limited to development and cannot pass the production deployment guard. This variant intentionally has no PostgreSQL, Drizzle, or separate data-service fallback.

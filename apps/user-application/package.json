@@ -5,8 +5,9 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "deploy": "pnpm run build && wrangler deploy",
+    "deploy": "node ../../scripts/require-production-ci.mjs && wrangler deploy",
     "serve": "vite preview",
     "cf-typegen": "wrangler types --env-file .env.example --env-interface Env"
   },

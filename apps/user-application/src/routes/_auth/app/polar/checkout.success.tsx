@@ -5,6 +5,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { requireAuthenticatedRoute } from "@/lib/route-auth";
 
 const searchSchema = z.object({
   checkout_id: z.string(),
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/_auth/app/polar/checkout/success")({
     return search;
   },
   loader: async ({ context }) => {
+    requireAuthenticatedRoute(context);
     await context.queryClient.ensureQueryData(
       convexQuery(api.billing.getCurrentSubscription, {}),
     );

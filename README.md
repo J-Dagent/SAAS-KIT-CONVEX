@@ -9,6 +9,8 @@ A Convex-native variant of the JD SaaS Kit. It keeps the TanStack Start and Clou
 
 Cloudflare owns the frontend worker and static assets. Convex is the only application database and backend platform in this variant.
 
+Public routes require neither Better Auth nor a Convex token. A public feature can opt into the lazy anonymous Convex provider without changing the root route. The private `/app` boundary owns authenticated Convex access.
+
 ## Setup
 
 ```bash
@@ -16,7 +18,7 @@ pnpm run setup
 pnpm skills:sync
 ```
 
-This installs dependencies, configures a Convex development deployment, and creates the frontend `.env.local` with local Convex URLs when it does not already exist. Existing local environment files are never overwritten. Set the required Convex, OAuth, and Polar environment variables before exercising authentication or billing.
+This installs dependencies, configures a local Convex development deployment, and creates the frontend `.env.local` with local Convex URLs when it does not already exist. Existing local environment files are never overwritten. Local loopback URLs are never used by a production build.
 
 ## Development
 
@@ -43,18 +45,8 @@ pnpm build
 pnpm test
 ```
 
-No automated test suite is configured yet; `pnpm test` reports that fact explicitly.
+The frontend tests cover the local and production Convex URL boundary and private route guards.
 
 ## Deployment
 
-### User Application (Cloudflare)
-```bash
-pnpm run deploy:user-application
-```
-
-### Convex backend
-```bash
-pnpm run deploy:backend
-```
-
-Deployment commands are manual and are not part of routine validation. See [AGENTS.md](AGENTS.md) for engineering conventions and [`apps/user-application/public/docs/convex.md`](apps/user-application/public/docs/convex.md) for setup details.
+GitHub Actions is the sole production deployer. Run the manual `Deploy` workflow after configuring its `production` environment. Local deploy scripts stop before contacting Convex or Cloudflare. See [AGENTS.md](AGENTS.md) for engineering conventions and [`apps/user-application/public/docs/deployment.md`](apps/user-application/public/docs/deployment.md) for the required GitHub environment configuration.

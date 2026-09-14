@@ -3,10 +3,12 @@ import { convexQuery } from "@convex-dev/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { PricingGrid, useCheckout } from "@/components/payments/polar";
+import { requireAuthenticatedRoute } from "@/lib/route-auth";
 
 export const Route = createFileRoute("/_auth/app/polar/subscriptions")({
   component: RouteComponent,
   loader: async ({ context }) => {
+    requireAuthenticatedRoute(context);
     await Promise.all([
       context.queryClient.prefetchQuery(
         convexQuery(api.billing.listAllProducts, {}),

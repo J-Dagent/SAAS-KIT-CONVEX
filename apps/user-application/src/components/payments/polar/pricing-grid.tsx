@@ -16,9 +16,9 @@ export function PricingGrid({
 }: PricingGridProps) {
   const sortedProducts = [...products].sort((a, b) => {
     const aAmount =
-      a.prices[0]?.amountType === "fixed" ? a.prices[0].priceAmount : 0;
+      a.prices[0]?.amountType === "fixed" ? (a.prices[0].priceAmount ?? 0) : 0;
     const bAmount =
-      b.prices[0]?.amountType === "fixed" ? b.prices[0].priceAmount : 0;
+      b.prices[0]?.amountType === "fixed" ? (b.prices[0].priceAmount ?? 0) : 0;
     return aAmount - bAmount;
   });
 

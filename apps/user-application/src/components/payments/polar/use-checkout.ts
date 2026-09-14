@@ -8,11 +8,8 @@ export function useCheckout() {
   );
   const checkoutMutation = useMutation({
     mutationFn: async (productId: string) => {
-      const origin = window.location.origin;
       return await generateCheckoutLink({
-        productIds: [productId],
-        origin,
-        successUrl: `${origin}/app/polar/checkout/success?checkout_id={CHECKOUT_ID}`,
+        productId,
         locale: "fr",
       });
     },

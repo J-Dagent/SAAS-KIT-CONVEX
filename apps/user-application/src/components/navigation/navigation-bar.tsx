@@ -12,9 +12,6 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme";
-import { authClient } from "@/lib/auth-client";
-import { AccountDialog } from "@/components/auth/account-dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface NavigationItem {
   label: string;
@@ -40,20 +37,6 @@ const navigationItems: NavigationItem[] = [
 export function NavigationBar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
-  const { data: session } = authClient.useSession();
-
-  const handleGoogleSignIn = async () => {
-    await authClient.signIn.social({
-      provider: "google",
-      callbackURL: "/app",
-    });
-  };
-
-  const user = session?.user;
-  const fallbackText = user?.name
-    ? user.name.charAt(0).toUpperCase()
-    : user?.email?.charAt(0).toUpperCase() || "U";
-
   React.useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -132,36 +115,12 @@ export function NavigationBar() {
 
           {/* Auth Button - Desktop */}
           <div className="hidden lg:block">
-            {session ? (
-              <AccountDialog>
-                <Button
-                  variant="ghost"
-                  className="flex items-center gap-2 px-3"
-                >
-                  <Avatar className="h-7 w-7">
-                    <AvatarImage
-                      src={user?.image || undefined}
-                      alt={user?.name || "Utilisateur"}
-                    />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {fallbackText}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium">
-                    {user?.name || "Compte"}
-                  </span>
-                </Button>
-              </AccountDialog>
-            ) : (
-              <Button
-                onClick={handleGoogleSignIn}
-                variant="default"
-                className="gap-2"
-              >
+            <Button asChild variant="default" className="gap-2">
+              <Link to="/app">
                 <LogIn className="h-4 w-4" />
                 Se connecter
-              </Button>
-            )}
+              </Link>
+            </Button>
           </div>
 
           {/* Mobile Menu Button + Theme Toggle */}
@@ -224,36 +183,12 @@ export function NavigationBar() {
 
                 {/* Mobile Auth */}
                 <div className="pt-4 border-t border-border/50">
-                  {session ? (
-                    <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-accent/30">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage
-                          src={user?.image || undefined}
-                          alt={user?.name || "Utilisateur"}
-                        />
-                        <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                          {fallbackText}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">
-                          {user?.name || "Utilisateur"}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {user?.email}
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <Button
-                      onClick={handleGoogleSignIn}
-                      variant="default"
-                      className="w-full gap-2"
-                    >
+                  <Button asChild variant="default" className="w-full gap-2">
+                    <Link to="/app" onClick={() => setIsOpen(false)}>
                       <LogIn className="h-4 w-4" />
                       Se connecter avec Google
-                    </Button>
-                  )}
+                    </Link>
+                  </Button>
                 </div>
               </SheetContent>
             </Sheet>
