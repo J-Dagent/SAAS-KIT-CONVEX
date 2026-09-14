@@ -11,7 +11,7 @@
     "setup": "convex dev --once && node scripts/sync-app-env.mjs",
     "sync:app-env": "node scripts/sync-app-env.mjs",
     "dev": "convex dev",
-    "deploy": "node ../../scripts/require-production-ci.mjs && convex deploy",
+    "deploy": "convex deploy",
     "codegen": "convex codegen",
     "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit"

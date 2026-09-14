@@ -36,7 +36,7 @@ pnpm test
 pnpm skills:sync
 ```
 
-`pnpm test` runs the repository's automated checks. GitHub Actions owns production deployment; deploy scripts reject local execution.
+`pnpm test` runs the repository's automated checks. Production releases must have one designated owner: a CI/CD pipeline or an explicitly initiated manual release, never two competing deployment systems.
 
 ## Convex
 

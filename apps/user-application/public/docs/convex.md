@@ -117,7 +117,7 @@ pnpm dev:backend
 
 ## Production deployment
 
-GitHub Actions owns the production release. It validates configuration, builds once, configures and deploys Convex Cloud, then deploys the verified Worker artifact. Local deploy scripts reject execution. See [Environments](/docs/environments) and [Deployment](/docs/deployment).
+Production uses Convex Cloud. The selected release owner validates configuration, builds once, deploys Convex, then deploys the verified Worker artifact. `CONVEX_DEPLOY_KEY` enables a non-interactive Convex deployment in any CI provider. See [Environments](/docs/environments) and [Deployment](/docs/deployment).
 
 ## TanStack Start connection
 
@@ -141,4 +141,4 @@ Anonymous functions belong in `packages/backend/convex/public.ts`. `submitAnonym
 
 Generate the anonymous identifier in the browser with `crypto.randomUUID()` and keep it in local storage. This identifier improves fairness but is not an identity or authorization credential. Expensive operations such as an AI action should also verify Cloudflare Turnstile before paying for external model usage.
 
-`VITE_CONVEX_URL` and `VITE_CONVEX_SITE_URL` are public deployment endpoints. Browser bundles must contain them, so store them as GitHub variables. Credentials such as `CONVEX_DEPLOY_KEY`, OAuth client secrets, Better Auth secrets, and Polar tokens remain secrets.
+`VITE_CONVEX_URL` and `VITE_CONVEX_SITE_URL` are public deployment endpoints. Browser bundles must contain them, so configure them as ordinary build variables. Credentials such as `CONVEX_DEPLOY_KEY`, OAuth client secrets, Better Auth secrets, and Polar tokens remain secrets.

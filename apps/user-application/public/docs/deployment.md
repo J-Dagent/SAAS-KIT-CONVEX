@@ -10,9 +10,9 @@ Deploy the backend before the frontend:
 4. Deploy the Worker to Cloudflare.
 5. Smoke-test `/`, `/docs`, `/app`, and the OAuth callback.
 
-## GitHub Actions
+## Release owner
 
-`.github/workflows/deploy.yml` provides a manual `workflow_dispatch` release. It uses GitHub's `production` environment and performs:
+The template intentionally ships without a provider-specific pipeline. Choose exactly one system to own production releases: GitHub Actions, GitLab CI, Cloudflare, another CI service, or a controlled manual process. That release owner should perform:
 
 ```text
 install
@@ -23,9 +23,27 @@ install
   -> Cloudflare Worker deploy
 ```
 
-GitHub Actions is the only production deployer. Local deploy commands fail before contacting Convex or Cloudflare. The workflow validates every required public variable and private secret, builds once, configures the Convex production environment, deploys Convex, then uploads the same verified frontend artifact to Cloudflare.
+Do not configure a second automatic deploy for the same production environment. Competing systems can publish different commits or build with different variables.
 
-Convex uses `CONVEX_DEPLOY_KEY`, while Wrangler uses its Cloudflare API token. `VITE_CONVEX_URL`, `VITE_CONVEX_SITE_URL`, `SITE_URL`, `GOOGLE_CLIENT_ID`, and `CLOUDFLARE_ACCOUNT_ID` are GitHub environment variables because they are not secrets.
+Convex uses `CONVEX_DEPLOY_KEY` for non-interactive authentication, while Wrangler uses `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in CI. An operator running Wrangler manually may use an authenticated local session. `VITE_CONVEX_URL`, `VITE_CONVEX_SITE_URL`, `SITE_URL`, `GOOGLE_CLIENT_ID`, `POLAR_SERVER`, and `CLOUDFLARE_ACCOUNT_ID` are configuration rather than application secrets.
+
+## Provider-neutral commands
+
+Inject the production variables and secrets with your runner's native mechanism, then run:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm run validate:deployment-env
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm deploy:backend
+pnpm deploy:user-application
+```
+
+Before the first release, or whenever server-side values change, configure the Convex Cloud environment using the commands in [Environments](/docs/environments). `pnpm deploy:backend` uses an interactive Convex login when run by an operator or `CONVEX_DEPLOY_KEY` when supplied by CI. `pnpm deploy:user-application` validates the public production Convex URLs before Wrangler uploads the generated artifact.
+
+The build itself runs the artifact leak check. It fails if generated output contains loopback Convex endpoints or known private variable values. Never edit `dist` or `.wrangler` output manually; rebuild from source instead.
 
 ## Post-deployment checks
 

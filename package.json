@@ -5,9 +5,9 @@
   "scripts": {
     "setup": "pnpm install && pnpm --filter @repo/backend run setup",
     "dev:user-application": "pnpm --filter jd-convex-start-app run dev",
-    "deploy:user-application": "node scripts/require-production-ci.mjs && pnpm run validate:production-env && pnpm --filter jd-convex-start-app run deploy",
+    "deploy:user-application": "pnpm run validate:production-env && pnpm --filter jd-convex-start-app run deploy",
     "dev:backend": "pnpm --filter @repo/backend run dev",
-    "deploy:backend": "node scripts/require-production-ci.mjs && pnpm --filter @repo/backend run deploy",
+    "deploy:backend": "pnpm --filter @repo/backend run deploy",
     "dev": "pnpm --parallel --filter jd-convex-start-app --filter @repo/backend run dev",
     "build": "pnpm --filter @repo/backend run build && pnpm --filter jd-convex-start-app run build && pnpm run validate:production-build",
     "typecheck": "pnpm -r typecheck",

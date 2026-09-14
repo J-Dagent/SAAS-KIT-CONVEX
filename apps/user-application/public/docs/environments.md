@@ -38,9 +38,9 @@ VITE_CONVEX_SITE_URL="https://your-deployment.convex.site"
 
 Production builds read these values only from the process environment. They do not load the local Convex values from `.env.local`. `pnpm run validate:production-env` rejects missing values, HTTP URLs, and loopback hosts.
 
-## GitHub environment
+## Production release configuration
 
-Create a GitHub environment named `production` with these secrets:
+Configure the following secrets in the single system responsible for production releases:
 
 - `CONVEX_DEPLOY_KEY`
 - `CLOUDFLARE_API_TOKEN`
@@ -57,7 +57,9 @@ Add these non-secret environment variables:
 - `VITE_CONVEX_URL`
 - `VITE_CONVEX_SITE_URL`
 
-The `VITE_CONVEX_*` values identify public Convex endpoints. Browser code must know them, so treating them as secrets adds no protection. The Convex deploy key must belong to the production deployment whose two public URLs are stored in the GitHub variables.
+The `VITE_CONVEX_*` values identify public Convex endpoints. Browser code must know them, so treating them as secrets adds no protection. The Convex deploy key must belong to the production deployment identified by those two public URLs.
+
+Your chosen runner may be GitHub Actions, GitLab CI, Cloudflare, another CI service, or a controlled manual shell. Map the names above using that system's native secret and variable storage; never commit their values. Run `pnpm run validate:deployment-env` before any production mutation so missing private configuration stops the release early.
 
 ## Optional Worker telemetry
 

@@ -49,4 +49,4 @@ The frontend tests cover the local and production Convex URL boundary and privat
 
 ## Deployment
 
-GitHub Actions is the sole production deployer. Run the manual `Deploy` workflow after configuring its `production` environment. Local deploy scripts stop before contacting Convex or Cloudflare. See [AGENTS.md](AGENTS.md) for engineering conventions and [`apps/user-application/public/docs/deployment.md`](apps/user-application/public/docs/deployment.md) for the required GitHub environment configuration.
+The template does not prescribe a CI/CD provider. Choose one production release owner—GitHub Actions, GitLab CI, Cloudflare, another CI system, or a deliberate manual process—and provide it with the documented configuration. Production validation, build leak checks, `CONVEX_DEPLOY_KEY` support, and the generic Convex and Cloudflare deploy commands remain available. See [AGENTS.md](AGENTS.md) for engineering conventions and [`apps/user-application/public/docs/deployment.md`](apps/user-application/public/docs/deployment.md) for the release contract.

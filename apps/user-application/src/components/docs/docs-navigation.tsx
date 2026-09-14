@@ -17,7 +17,7 @@ export const documentationPages = [
   { name: "polar", label: "Polar", description: "Products, checkout, webhooks, and subscriptions.", icon: CreditCard },
   { name: "environments", label: "Environments", description: "Local values, cloud variables, and secrets.", icon: Settings2 },
   { name: "cloudflare", label: "Cloudflare", description: "Worker configuration and production builds.", icon: Cloud },
-  { name: "deployment", label: "Deployment", description: "Manual releases and the GitHub Actions pipeline.", icon: Rocket },
+  { name: "deployment", label: "Deployment", description: "Provider-neutral Convex and Cloudflare releases.", icon: Rocket },
 ] as const;
 
 export function DocsNavigation({ current }: { current?: string }) {

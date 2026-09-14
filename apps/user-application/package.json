@@ -7,7 +7,7 @@
     "build": "vite build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "deploy": "node ../../scripts/require-production-ci.mjs && wrangler deploy",
+    "deploy": "wrangler deploy",
     "serve": "vite preview",
     "cf-typegen": "wrangler types --env-file .env.example --env-interface Env"
   },
