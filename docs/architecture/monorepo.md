@@ -14,4 +14,4 @@ The root creates one TanStack Query client and one passive Convex client. Public
 
 ## Runtime path
 
-Ordinary public requests follow Browser → Cloudflare. A public component creates a Convex subscription only when it calls a public function. Private requests add token-bearing Convex access under `/app`. Local Convex loopback URLs are limited to development and cannot pass the production deployment guard.
+Ordinary public requests follow Browser → Cloudflare. A public component creates a Convex subscription only when it calls a public function. Private requests add token-bearing Convex access under `/app`. Development and production use their configured Convex Cloud deployments; loopback Convex URLs are rejected.

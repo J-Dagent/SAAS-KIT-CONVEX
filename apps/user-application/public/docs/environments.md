@@ -2,11 +2,12 @@
 
 ## Local development
 
-Local Convex runs on loopback addresses. `pnpm run setup` creates these values in `apps/user-application/.env.local` without overwriting an existing file:
+Local development uses a Convex Cloud development deployment. Connect the backend first, then `pnpm run setup` writes its public endpoints to `apps/user-application/.env.local` without overwriting an existing file:
 
 ```bash
-VITE_CONVEX_URL="http://localhost:3210"
-VITE_CONVEX_SITE_URL="http://localhost:3211"
+VITE_CONVEX_URL="https://your-deployment.convex.cloud"
+VITE_CONVEX_SITE_URL="https://your-deployment.convex.site"
+VITE_SITE_URL="http://localhost:3000"
 ```
 
 All `.env` and `.env.*` files remain ignored except committed example files. Never copy credentials into a tracked file.
@@ -36,7 +37,7 @@ VITE_CONVEX_URL="https://your-deployment.convex.cloud"
 VITE_CONVEX_SITE_URL="https://your-deployment.convex.site"
 ```
 
-Production builds read these values only from the process environment. They do not load the local Convex values from `.env.local`. `pnpm run validate:production-env` rejects missing values, HTTP URLs, and loopback hosts.
+Production builds read these values only from the process environment. They do not load development values from `.env.local`. `pnpm run validate:production-env` rejects missing values, HTTP URLs, and loopback hosts.
 
 ## Production release configuration
 

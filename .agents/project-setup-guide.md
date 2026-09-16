@@ -22,7 +22,17 @@ Ask whether the user is setting up local development or production. Confirm Node
 
 Never read, print, overwrite, or commit secret values. Ask the user to configure them through Convex, their deployment platform, or their local shell.
 
-## 2. Start local development
+## 2. Connect Convex Cloud
+
+Select an existing Convex Cloud project before running setup:
+
+```bash
+pnpm --filter @repo/backend exec convex dev --configure existing --dev-deployment cloud --once
+```
+
+This creates `packages/backend/.env.local` with `CONVEX_DEPLOYMENT`. Do not select a local deployment. In non-interactive environments, provide `CONVEX_DEPLOY_KEY` instead.
+
+## 3. Start local development
 
 From the repository root, run:
 
@@ -30,11 +40,11 @@ From the repository root, run:
 pnpm run setup
 ```
 
-This installs dependencies, starts Convex setup once, generates the typed API, and creates `apps/user-application/.env.local` only when the file does not exist. The generated frontend values are:
+This installs dependencies, updates the selected Convex Cloud development deployment, generates the typed API, and creates `apps/user-application/.env.local` only when the file does not exist. The frontend uses the selected deployment's public endpoints:
 
 ```bash
-VITE_CONVEX_URL="http://localhost:3210"
-VITE_CONVEX_SITE_URL="http://localhost:3211"
+VITE_CONVEX_URL="https://your-deployment.convex.cloud"
+VITE_CONVEX_SITE_URL="https://your-deployment.convex.site"
 VITE_SITE_URL="http://localhost:3000"
 ```
 
@@ -47,9 +57,9 @@ pnpm run dev:backend
 pnpm run dev:user-application
 ```
 
-Local Convex URLs must stay local and untracked.
+Convex Cloud configuration and local application URLs must stay untracked.
 
-## 3. Configure Better Auth
+## 4. Configure Better Auth
 
 Set server values on the active Convex deployment:
 
@@ -68,7 +78,7 @@ http://localhost:3000/api/auth/callback/google
 
 For production, replace the origin with the public application origin. Better Auth routes through `/api/auth/*`; session data stays in Convex.
 
-## 4. Configure Polar when needed
+## 5. Configure Polar when needed
 
 Use Polar sandbox for development:
 
@@ -80,7 +90,7 @@ pnpm --filter @repo/backend exec convex env set POLAR_SERVER sandbox
 
 Configure the webhook at `https://your-deployment.convex.site/polar/events`. Keep Polar credentials in Convex environment variables, not frontend files.
 
-## 5. Validate local setup
+## 6. Validate local setup
 
 Run:
 
@@ -92,7 +102,7 @@ pnpm build
 
 Then verify `/`, `/docs`, sign-in, `/app`, sign-out, and one protected Convex query. Public routes must render without a session or available Convex connection. Full OAuth testing requires valid Google and Convex configuration.
 
-## 6. Prepare production
+## 7. Prepare production
 
 Production must use Convex Cloud. Supply these public build variables:
 

@@ -18,7 +18,7 @@ pnpm run setup
 pnpm skills:sync
 ```
 
-This installs dependencies, configures a local Convex development deployment, and creates the frontend `.env.local` with local Convex URLs when it does not already exist. Existing local environment files are never overwritten. Local loopback URLs are never used by a production build.
+This installs dependencies, verifies that a Convex Cloud development deployment is configured, and creates the frontend `.env.local` with its public Convex URLs when the file does not already exist. Existing local environment files are never overwritten. Loopback Convex URLs are rejected.
 
 ## Development
 

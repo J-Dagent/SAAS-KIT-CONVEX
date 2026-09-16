@@ -85,11 +85,11 @@ function DocumentationHome() {
 
           <section className="mt-12 grid gap-8 border-t border-border pt-10 md:grid-cols-2">
             <div>
-              <h2 className="text-xl font-semibold">Deux processus en local</h2>
+              <h2 className="text-xl font-semibold">Frontend local, backend cloud</h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                TanStack Start sert l’interface. Convex local sert les données,
-                l’authentification et les fonctions backend. Les URL locales ne
-                sont jamais reprises par un build de production.
+                TanStack Start sert l’interface en local. Convex Cloud sert les
+                données, l’authentification et les fonctions backend. Chaque
+                environnement utilise son deployment Convex configuré.
               </p>
             </div>
             <div className="space-y-3">

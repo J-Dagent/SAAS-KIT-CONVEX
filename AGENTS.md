@@ -42,6 +42,14 @@ pnpm skills:sync
 
 Convex is the single primary backend and data platform in this variant. Do not add PostgreSQL, Drizzle, or another fallback data layer. Read `packages/backend/convex/_generated/ai/guidelines.md` before changing Convex functions. Run `pnpm dev:backend` for development code generation. Run `pnpm deploy:backend` only when deployment is explicitly requested.
 
+## Data Tables
+
+Use TanStack Table by default for application data tables that require table behavior.
+
+Keep it in the frontend presentation layer and use the project's existing data and fetching architecture.
+
+Do not introduce another table/data-grid library or a generic table abstraction unless an existing feature explicitly requires it.
+
 ## Source Inspection
 
 When dependency source inspection is needed, fetch only the relevant package or repository with `npx opensrc`. Do not assume `opensrc/` is populated.

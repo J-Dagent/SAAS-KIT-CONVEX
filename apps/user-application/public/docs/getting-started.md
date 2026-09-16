@@ -17,15 +17,21 @@ Use Node.js 22 and pnpm 10.14.0, then install from the repository root:
 pnpm install
 ```
 
-## Start local Convex
+## Connect Convex Cloud
 
-The first setup starts a local Convex deployment, generates the typed API, and creates the frontend's local URL file if it does not exist:
+Connect an existing Convex Cloud development deployment once, without committing its identifiers:
+
+```bash
+pnpm --filter @repo/backend exec convex dev --configure existing --dev-deployment cloud --once
+```
+
+Setup then generates the typed API and creates the frontend's local environment file with the deployment's public URLs if it does not exist:
 
 ```bash
 pnpm run setup
 ```
 
-Keep the local deployment running in one terminal:
+Keep the Convex development process running in one terminal:
 
 ```bash
 pnpm run dev:backend

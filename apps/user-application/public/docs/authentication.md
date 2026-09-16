@@ -17,7 +17,7 @@ Convex owns Better Auth session data while the existing login, account, and logo
 
 ## Required environment variables
 
-`pnpm run setup` creates `apps/user-application/.env.local` with the local Convex URLs when that file does not already exist. It never overwrites an existing local environment file. For a manual or production configuration, set:
+`pnpm run setup` creates `apps/user-application/.env.local` with the configured Convex Cloud deployment URLs when that file does not already exist. It never overwrites an existing local environment file. For a manual or production configuration, set:
 
 ```bash
 # apps/user-application/.env.local

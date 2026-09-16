@@ -12,7 +12,7 @@ function readValue(source, key) {
     .find((candidate) => candidate.startsWith(`${key}=`));
   if (!line) return undefined;
 
-  const rawValue = line.slice(key.length + 1).trim();
+  const rawValue = line.slice(key.length + 1).trim().split(/\s+#/, 1)[0];
   if (
     (rawValue.startsWith('"') && rawValue.endsWith('"')) ||
     (rawValue.startsWith("'") && rawValue.endsWith("'"))
@@ -20,6 +20,23 @@ function readValue(source, key) {
     return rawValue.slice(1, -1);
   }
   return rawValue;
+}
+
+function requireCloudUrl(value, suffix, name) {
+  if (!value) return undefined;
+
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`${name} must be a valid URL.`);
+  }
+
+  if (url.protocol !== "https:" || !url.hostname.endsWith(suffix)) {
+    throw new Error(`${name} must use HTTPS and target ${suffix}.`);
+  }
+
+  return url.origin;
 }
 
 if (!existsSync(backendEnvPath)) {
@@ -44,19 +61,32 @@ if (existsSync(appEnvPath)) {
 }
 
 const backendEnv = readFileSync(backendEnvPath, "utf8");
-const convexUrl = readValue(backendEnv, "CONVEX_URL");
-const convexSiteUrl = readValue(backendEnv, "CONVEX_SITE_URL");
+const deployment = readValue(backendEnv, "CONVEX_DEPLOYMENT");
+const deploymentName = deployment?.match(/^(?:dev|prod):([a-z0-9-]+)$/)?.[1];
 
-if (!convexUrl || !convexSiteUrl) {
+if (!deploymentName) {
   throw new Error(
-    "packages/backend/.env.local is missing CONVEX_URL or CONVEX_SITE_URL.",
+    "packages/backend/.env.local must select a Convex Cloud deployment with CONVEX_DEPLOYMENT.",
   );
 }
+
+const convexUrl = requireCloudUrl(
+  readValue(backendEnv, "CONVEX_URL") ??
+    `https://${deploymentName}.convex.cloud`,
+  ".convex.cloud",
+  "CONVEX_URL",
+);
+const convexSiteUrl = requireCloudUrl(
+  readValue(backendEnv, "CONVEX_SITE_URL") ??
+    `https://${deploymentName}.convex.site`,
+  ".convex.site",
+  "CONVEX_SITE_URL",
+);
 
 writeFileSync(
   appEnvPath,
   [
-    "# Generated once by the Convex backend setup; safe to customize locally.",
+    "# Generated once from the selected Convex Cloud deployment; safe to customize locally.",
     `VITE_CONVEX_URL=${JSON.stringify(convexUrl)}`,
     `VITE_CONVEX_SITE_URL=${JSON.stringify(convexSiteUrl)}`,
     'VITE_SITE_URL="http://localhost:3000"',
@@ -65,4 +95,4 @@ writeFileSync(
   { flag: "wx" },
 );
 
-console.log("Created apps/user-application/.env.local with local Convex URLs.");
+console.log("Created apps/user-application/.env.local with Convex Cloud URLs.");

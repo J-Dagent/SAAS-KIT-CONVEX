@@ -14,10 +14,6 @@ export function getApplicationOrigin() {
     return new URL(env.SITE_URL).origin;
   }
 
-  if (new URL(env.CONVEX_SITE_URL).hostname === "127.0.0.1") {
-    return "http://localhost:3000";
-  }
-
   throw new Error("SITE_URL must be configured on this Convex deployment.");
 }
 
