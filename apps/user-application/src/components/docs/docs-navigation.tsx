@@ -26,7 +26,7 @@ export function DocsNavigation({ current }: { current?: string }) {
       <div className="mb-4 flex items-center gap-3 border-b border-border pb-4">
         <img src="/logo192.png" alt="React" className="h-9 w-9 rounded-md" />
         <div>
-          <p className="text-sm font-semibold">JD SaaS Kit</p>
+          <p className="text-sm font-semibold">SaaS Kit</p>
           <p className="text-xs text-muted-foreground">Convex reference</p>
         </div>
       </div>
