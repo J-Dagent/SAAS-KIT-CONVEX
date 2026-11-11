@@ -1,0 +1,28 @@
+{
+  "name": "jd-saas-kit-convex",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "setup": "pnpm install && pnpm --filter @repo/backend run setup",
+    "dev:user-application": "pnpm --filter jd-convex-start-app run dev",
+    "deploy:user-application": "pnpm run validate:production-env && pnpm --filter jd-convex-start-app run deploy",
+    "dev:backend": "pnpm --filter @repo/backend run dev",
+    "deploy:backend": "pnpm --filter @repo/backend run deploy",
+    "dev": "pnpm --parallel --filter jd-convex-start-app --filter @repo/backend run dev",
+    "build": "pnpm --filter @repo/backend run build && pnpm --filter jd-convex-start-app run build && pnpm run validate:production-build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r --if-present test",
+    "validate:production-env": "node scripts/validate-production-env.mjs",
+    "validate:deployment-env": "node scripts/validate-deployment-env.mjs",
+    "validate:production-build": "node scripts/validate-production-build.mjs",
+    "skills:sync": "node scripts/sync-agent-skills.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.14.0",
+  "devDependencies": {
+    "@types/node": "^22.18.12",
+    "typescript": "5.9.3"
+  }
+}

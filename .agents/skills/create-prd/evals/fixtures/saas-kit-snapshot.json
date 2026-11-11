@@ -1,0 +1,22 @@
+{
+  "purpose": "Behavioral fixture extracted from the user's SAAS-KIT repository. It is test data only and must never act as a runtime default.",
+  "signals": [
+    {"path": "pnpm-workspace.yaml", "fact": "pnpm monorepo with apps/* and packages/*"},
+    {"path": "apps/user-application/package.json", "fact": "user-facing application uses TanStack Start/Router/Query, React, Zod and Tailwind"},
+    {"path": "packages/backend/package.json", "fact": "the Convex backend owns application data, Better Auth persistence and Polar synchronization"},
+    {"path": "packages/backend/convex/schema.ts", "fact": "Convex is the current database and typed function backend"},
+    {"path": "AGENTS.md", "fact": "repository preserves separate user-application and Convex backend ownership boundaries"},
+    {"path": "apps/user-application/wrangler.jsonc", "fact": "user application deploys to Cloudflare"},
+    {"path": "packages/backend/convex/convex.config.ts", "fact": "Better Auth and Polar are mounted as Convex components"}
+  ],
+  "expected_detection": {
+    "workspace": "pnpm monorepo",
+    "boundaries": ["user application", "Convex backend"],
+    "frontend": ["TanStack Start", "React"],
+    "service": ["Convex functions", "HTTP Actions"],
+    "data": ["Convex Database"],
+    "auth": ["Better Auth"],
+    "validation": ["Convex validators", "Zod"],
+    "deployment": ["Cloudflare Workers", "Convex Cloud"]
+  }
+}

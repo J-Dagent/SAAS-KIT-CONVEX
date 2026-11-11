@@ -1,0 +1,52 @@
+# jd-saas-kit-convex
+
+A Convex-native variant of the JD SaaS Kit. It keeps the TanStack Start and Cloudflare frontend while Convex owns backend data, authentication persistence, billing synchronization, and realtime updates.
+
+## Architecture
+
+- `apps/user-application` (`jd-convex-start-app`): TanStack Start UI and SSR on Cloudflare, existing authentication UX, billing screens, and framework-owned Server Functions.
+- `packages/backend` (`@repo/backend`): Convex schema, queries, mutations, actions, HTTP Actions, Better Auth component, and Polar component.
+
+Cloudflare owns the frontend worker and static assets. Convex is the only application database and backend platform in this variant.
+
+The root exposes one passive Convex client. Public routes require neither Better Auth nor a Convex token, and a public component can call a public Convex function directly. The private `/app` boundary owns authenticated Convex access.
+
+## Setup
+
+```bash
+pnpm run setup
+pnpm skills:sync
+```
+
+This installs dependencies, verifies that a Convex Cloud development deployment is configured, and creates the frontend `.env.local` with its public Convex URLs when the file does not already exist. Existing local environment files are never overwritten. Loopback Convex URLs are rejected.
+
+## Development
+
+### All applications
+```bash
+pnpm dev
+```
+
+### User Application
+```bash
+pnpm run dev:user-application
+```
+
+### Convex backend
+```bash
+pnpm run dev:backend
+```
+
+## Validation
+
+```bash
+pnpm typecheck
+pnpm build
+pnpm test
+```
+
+The frontend tests cover the Better Auth integration and private route guards.
+
+## Deployment
+
+The template does not prescribe a CI/CD provider. Choose one production release owner—GitHub Actions, GitLab CI, Cloudflare, another CI system, or a deliberate manual process—and provide it with the documented configuration. Production validation, build leak checks, `CONVEX_DEPLOY_KEY` support, and the generic Convex and Cloudflare deploy commands remain available. See [AGENTS.md](AGENTS.md) for engineering conventions and [`apps/user-application/public/docs/deployment.md`](apps/user-application/public/docs/deployment.md) for the release contract.
