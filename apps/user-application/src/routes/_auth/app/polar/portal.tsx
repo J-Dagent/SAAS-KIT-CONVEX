@@ -15,12 +15,10 @@ export const Route = createFileRoute("/_auth/app/polar/portal")({
             fetchAuthQuery(api.auth.getAuthUser, {}),
             fetchAuthAction(api.billing.generateCustomerPortalUrl, {}),
           ]);
+          // Never send the portal URL: it is a bearer link to the customer's billing session.
           posthog?.capture({
             distinctId: user._id,
             event: "customer_portal_opened",
-            properties: {
-              portal_url: customerSession.url,
-            },
           });
           return new Response(null, {
             status: 302,
