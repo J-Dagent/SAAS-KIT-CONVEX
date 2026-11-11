@@ -18,7 +18,7 @@ The root owns one passive Convex client. Public routes do not require Better Aut
 
 ## 1. Confirm the target
 
-Ask whether the user is setting up local development or production. Confirm Node.js 26 and pnpm 10.34.9 are available.
+Ask whether the user is setting up local development or production. Confirm Node.js 24 (26 also works) and pnpm 10.34.9 are available.
 
 Never read, print, overwrite, or commit secret values. Ask the user to configure them through Convex, their deployment platform, or their local shell.
 
