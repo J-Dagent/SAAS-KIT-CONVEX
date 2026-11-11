@@ -11,7 +11,7 @@ The root creates one passive Convex client. Public pages do not request an authe
 
 ## Install
 
-Use Node.js 22 and pnpm 10.14.0, then install from the repository root:
+Use Node.js 26 and pnpm 10.34.9, then install from the repository root:
 
 ```bash
 pnpm install

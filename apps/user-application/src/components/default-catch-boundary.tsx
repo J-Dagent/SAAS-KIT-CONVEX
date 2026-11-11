@@ -30,8 +30,10 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
   console.error(error);
 
   // Format error details for display
-  const errorMessage = error?.message || "Une erreur inattendue s’est produite";
-  const errorStack = error?.stack || "";
+  const errorMessage =
+    (error instanceof Error && error.message) ||
+    "Une erreur inattendue s’est produite";
+  const errorStack = (error instanceof Error && error.stack) || "";
   const hasStack = errorStack.length > 0;
 
   const handleReportError = () => {

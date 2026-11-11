@@ -43,7 +43,7 @@ export const Route = createFileRoute("/_auth/app/polar/checkout/success")({
 
           <div className="pt-8">
             <p className="text-sm text-muted-foreground font-mono">
-              {error.message}
+              {error instanceof Error ? error.message : String(error)}
             </p>
           </div>
         </div>
